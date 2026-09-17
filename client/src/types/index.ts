@@ -211,3 +211,24 @@ export interface StockAlert {
   unit: string;
   percentageLeft: number;
 }
+
+export interface Product {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  process_type: ProcessType;
+  description?: string;
+  material_id?: string;
+  equipment_id?: string;
+  production_time_hours: number;
+  weight_g: number;
+  unit_cost: number;
+  unit_price: number;
+  margin_percent: number;
+  image_url?: string;
+  active: number;
+  calc_params_json?: string;
+  created_at: string;
+}
+

@@ -36,6 +36,7 @@ export function runSeed() {
     DELETE FROM print_failures;
     DELETE FROM order_items;
     DELETE FROM orders;
+    DELETE FROM products;
     DELETE FROM equipment_maintenances;
     DELETE FROM equipments;
     DELETE FROM materials_finishing;
@@ -951,7 +952,103 @@ export function runSeed() {
   `);
   transactions.forEach(t => insertTx.run(t));
 
-  console.log('Database seeded successfully!');
+  // Catálogo de Produtos & Fichas Técnicas
+  const products = [
+    {
+      id: uuidv4(),
+      sku: 'PRD-LUA-15',
+      name: 'Luminária Lua Litofania 15cm (Base Touch + LED)',
+      category: 'Decoração & Iluminação',
+      process_type: 'FDM',
+      description: 'Luminária esférica impressa com relevo topográfico hiper-detalhado da Lua, bocal para soquete G9 e base em madeira/PLA preto.',
+      production_time_hours: 14.5,
+      weight_g: 190,
+      unit_cost: 32.50,
+      unit_price: 129.00,
+      margin_percent: 74,
+      image_url: 'https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-GUTS-RES',
+      name: 'Estátua Berserk Guts 1/6 (Resina 8K Prime)',
+      category: 'Colecionáveis & Miniaturas',
+      process_type: 'RESIN',
+      description: 'Escultura de colecionador em Resina 8K com altura de 32cm, resolução ultra-fina de 30 micra, curada e lavada em IPA.',
+      production_time_hours: 6.0,
+      weight_g: 130, // 130ml
+      unit_cost: 49.00,
+      unit_price: 185.00,
+      margin_percent: 73,
+      image_url: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-GUTS-PNT',
+      name: 'Action Figure Guts Berserker (Pintura Artística + Verniz)',
+      category: 'Colecionáveis & Miniaturas',
+      process_type: 'PINTURA',
+      description: 'Pós-processamento completo com lixamento 1000, primer PU, aerografia de sombras, wash acrílico e selagem com verniz fosco bicomponente.',
+      production_time_hours: 8.5,
+      weight_g: 0,
+      unit_cost: 115.00,
+      unit_price: 395.00,
+      margin_percent: 70,
+      image_url: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-SUP-TAB',
+      name: 'Suporte Articulado Dobrável para Tablet & iPad',
+      category: 'Utilidades & Gadgets',
+      process_type: 'FDM',
+      description: 'Suporte print-in-place ultra resistente em PETG, ângulos ajustáveis de 15° a 75°, com apoios emborrachados anti-derrapantes.',
+      production_time_hours: 3.8,
+      weight_g: 95,
+      unit_cost: 14.20,
+      unit_price: 59.90,
+      margin_percent: 76,
+      image_url: 'https://images.unsplash.com/photo-1586775490184-b79f0621891f?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-LAS-CART',
+      name: 'Kit 50x Cartões Couchê 300g com Corte Especial a Laser',
+      category: 'Papelaria & Brindes',
+      process_type: 'LASER',
+      description: 'Cartões institucionais em couchê premium com impressão colorida digital e bordas vazadas recortadas a laser de alta precisão.',
+      production_time_hours: 0.6,
+      weight_g: 25,
+      unit_cost: 26.50,
+      unit_price: 98.00,
+      margin_percent: 72,
+      image_url: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-MAND-COS',
+      name: 'Capacete Mandalorian 1:1 Cosplay (FDM + Pintura Cromada)',
+      category: 'Cosplay & Props',
+      process_type: 'COMBO',
+      description: 'Tamanho real 1:1, reforçado para uso, lixado até 1500, acabamento com tinta Alclad cromo metálico espelhado e visor fumê flexível.',
+      production_time_hours: 28.0,
+      weight_g: 820,
+      unit_cost: 275.00,
+      unit_price: 890.00,
+      margin_percent: 69,
+      image_url: 'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=400&q=80',
+    }
+  ];
+
+  const insertProduct = db.prepare(`
+    INSERT INTO products (
+      id, sku, name, category, process_type, description,
+      production_time_hours, weight_g, unit_cost, unit_price, margin_percent, image_url
+    ) VALUES (@id, @sku, @name, @category, @process_type, @description, @production_time_hours, @weight_g, @unit_cost, @unit_price, @margin_percent, @image_url)
+  `);
+  products.forEach(p => insertProduct.run(p));
+
+  console.log('Database seeded successfully with products catalog!');
 }
 
 // Auto-run if executed directly via CLI

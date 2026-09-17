@@ -10,7 +10,8 @@ import {
   Settings, 
   PlusCircle,
   AlertTriangle,
-  Printer
+  Printer,
+  ShoppingBag
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const tabs = [
     { id: 'kanban', label: 'Kanban Produção', icon: Kanban },
     { id: 'orders', label: 'Pedidos & OS', icon: Layers },
+    { id: 'products', label: 'Catálogo Peças', icon: ShoppingBag },
     { id: 'calculator', label: 'Calculadora', icon: Calculator },
     { id: 'stock', label: 'Estoque & Refugos', icon: Package, badge: alertsCount },
     { id: 'equipments', label: 'Equipamentos', icon: Wrench },

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Client, ProcessType } from '../types';
+import { Client, ProcessType, Product } from '../types';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
-import { X, Plus, Trash2, Calculator, Check } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Check, ShoppingBag, Zap } from 'lucide-react';
 
 interface OrderModalProps {
   onClose: () => void;
   onOrderCreated: () => void;
-  initialItem?: any; // If triggered from Calculator!
+  initialItem?: any; // If triggered from Calculator or Product Catalog!
 }
 
 export const OrderModal: React.FC<OrderModalProps> = ({
@@ -18,6 +18,8 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   const [clients, setClients] = useState<Client[]>([]);
   const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [] });
   const [equipments, setEquipments] = useState<any[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   // Form State
@@ -57,20 +59,50 @@ export const OrderModal: React.FC<OrderModalProps> = ({
 
   const loadData = async () => {
     try {
-      const [cls, mats, eqs] = await Promise.all([
+      const [cls, mats, eqs, prods] = await Promise.all([
         api.getClients(),
         api.getMaterials(),
         api.getEquipments(),
+        api.getProducts(),
       ]);
       setClients(cls);
       setMaterials(mats);
       setEquipments(eqs);
+      setCatalogProducts(prods);
       if (cls.length > 0 && !clientId) {
         setClientId(cls[0].id);
       }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleSelectCatalogProduct = (productId: string) => {
+    if (!productId) return;
+    const prod = catalogProducts.find(p => p.id === productId);
+    if (!prod) return;
+
+    if (!title.trim()) {
+      setTitle(`Produção: ${prod.name}`);
+    }
+
+    const newItem = {
+      process_type: prod.process_type,
+      description: `[${prod.sku || 'PRD'}] ${prod.name}`,
+      quantity: 1,
+      material_id: prod.material_id || '',
+      equipment_id: prod.equipment_id || '',
+      unit_cost: prod.unit_cost || 0,
+      unit_price: prod.unit_price || 0,
+    };
+
+    // If there's only 1 item and it's empty, replace it
+    if (items.length === 1 && !items[0].description.trim() && items[0].unit_price === 0) {
+      setItems([newItem]);
+    } else {
+      setItems([...items, newItem]);
+    }
+    setSelectedCatalogId('');
   };
 
   const handleAddItem = () => {
@@ -274,15 +306,50 @@ export const OrderModal: React.FC<OrderModalProps> = ({
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <label className="form-label" style={{ margin: 0 }}>Itens do Pedido ({items.length})</label>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleAddItem}
-                >
-                  <Plus size={14} />
-                  <span>Adicionar Item</span>
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleAddItem}
+                  >
+                    <Plus size={14} />
+                    <span>Item Manual</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Quick Select from Product Catalog */}
+              {catalogProducts.length > 0 && (
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '8px 12px',
+                  marginBottom: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand-primary)', fontSize: '0.8rem', fontWeight: 700 }}>
+                    <ShoppingBag size={16} />
+                    <span>Puxar Peça Pré-Cadastrada:</span>
+                  </div>
+                  <select
+                    className="form-control"
+                    style={{ flex: 1, minWidth: 200, fontSize: '0.84rem' }}
+                    value={selectedCatalogId}
+                    onChange={e => handleSelectCatalogProduct(e.target.value)}
+                  >
+                    <option value="">-- Escolha um produto do catálogo para auto-preencher --</option>
+                    {catalogProducts.map(p => (
+                      <option key={p.id} value={p.id}>
+                        [{p.sku}] {p.name} ({p.process_type}) — {formatCurrency(p.unit_price)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {items.map((item, idx) => (

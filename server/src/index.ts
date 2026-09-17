@@ -12,6 +12,7 @@ import failuresRouter from './routes/failures.js';
 import financialRouter from './routes/financial.js';
 import settingsRouter from './routes/settings.js';
 import whatsappRouter from './routes/whatsapp.js';
+import productsRouter from './routes/products.js';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ dotenv.config();
 initSchema();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 app.use(cors());
 app.use(express.json());
@@ -34,6 +35,7 @@ app.use('/api/failures', failuresRouter);
 app.use('/api/financial', financialRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/whatsapp', whatsappRouter);
+app.use('/api/products', productsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({

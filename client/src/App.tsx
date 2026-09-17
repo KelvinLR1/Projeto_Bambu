@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { OrdersPage } from './pages/OrdersPage';
+import { ProductsPage } from './pages/ProductsPage';
 import { CalculatorPage } from './pages/CalculatorPage';
 import { StockPage } from './pages/StockPage';
 import { EquipmentsPage } from './pages/EquipmentsPage';
@@ -13,7 +14,7 @@ import { OrderModal } from './components/OrderModal';
 import { OrderDetailModal } from './components/OrderDetailModal';
 import { PrintDocumentModal } from './components/PrintDocumentModal';
 
-import { Order, OrderStatus } from './types';
+import { Order, OrderStatus, Product } from './types';
 import { api } from './services/api';
 import { celebrateSuccess } from './utils/formatters';
 
@@ -68,6 +69,20 @@ export function App() {
   };
 
   const handleOpenNewOrderWithItem = (item: any) => {
+    setCalcInitialItem(item);
+    setIsNewOrderModalOpen(true);
+  };
+
+  const handleOpenNewOrderWithProduct = (product: Product) => {
+    const item = {
+      process_type: product.process_type,
+      description: `[${product.sku || 'PRD'}] ${product.name}`,
+      quantity: 1,
+      material_id: product.material_id || '',
+      equipment_id: product.equipment_id || '',
+      unit_cost: product.unit_cost || 0,
+      unit_price: product.unit_price || 0,
+    };
     setCalcInitialItem(item);
     setIsNewOrderModalOpen(true);
   };
@@ -128,6 +143,10 @@ export function App() {
               setIsNewOrderModalOpen(true);
             }}
           />
+        )}
+
+        {activeTab === 'products' && (
+          <ProductsPage onGenerateOrderFromProduct={handleOpenNewOrderWithProduct} />
         )}
 
         {activeTab === 'calculator' && (

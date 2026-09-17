@@ -96,6 +96,16 @@ export const api = {
   getSettings: () => request<any>('/settings'),
   updateSettings: (data: any) => request<any>('/settings', { method: 'PUT', body: JSON.stringify(data) }),
 
+  // Products Catalog
+  getProducts: (params?: { category?: string; process?: string; search?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<any[]>(`/products${query ? `?${query}` : ''}`);
+  },
+  getProduct: (id: string) => request<any>(`/products/${id}`),
+  createProduct: (data: any) => request<any>('/products', { method: 'POST', body: JSON.stringify(data) }),
+  updateProduct: (id: string, data: any) => request<any>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteProduct: (id: string) => request<any>(`/products/${id}`, { method: 'DELETE' }),
+
   // WhatsApp
   generateWhatsAppLink: (phone: string, message: string) =>
     request<any>('/whatsapp/link', { method: 'POST', body: JSON.stringify({ phone, message }) }),

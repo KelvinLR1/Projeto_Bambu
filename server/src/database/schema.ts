@@ -161,6 +161,27 @@ export function initSchema() {
       FOREIGN KEY (equipment_id) REFERENCES equipments(id) ON DELETE SET NULL
     );
 
+    -- Catálogo de Produtos e Fichas Técnicas
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      sku TEXT UNIQUE,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'Geral', -- Colecionáveis, Decoração, Utilidades, Brindes, Arquitetura
+      process_type TEXT NOT NULL DEFAULT 'FDM', -- FDM, RESIN, LASER, PINTURA, COMBO
+      description TEXT,
+      material_id TEXT,
+      equipment_id TEXT,
+      production_time_hours REAL DEFAULT 0,
+      weight_g REAL DEFAULT 0, -- ou ml se resina
+      unit_cost REAL NOT NULL DEFAULT 0,
+      unit_price REAL NOT NULL DEFAULT 0,
+      margin_percent REAL DEFAULT 60,
+      image_url TEXT,
+      active INTEGER DEFAULT 1,
+      calc_params_json TEXT,
+      created_at TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
     -- Transações Financeiras (Fluxo de Caixa)
     CREATE TABLE IF NOT EXISTS financial_transactions (
       id TEXT PRIMARY KEY,
