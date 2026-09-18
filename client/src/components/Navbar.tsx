@@ -1,5 +1,6 @@
 import React from 'react';
 import { 
+  LayoutDashboard,
   Layers, 
   Kanban, 
   Calculator, 
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   alertsCount,
 }) => {
   const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'kanban', label: 'Kanban Produção', icon: Kanban },
     { id: 'orders', label: 'Pedidos & OS', icon: Layers },
     { id: 'products', label: 'Catálogo Peças', icon: ShoppingBag },
@@ -41,16 +43,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="no-print" style={{
-      background: 'rgba(17, 23, 38, 0.95)',
-      backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid var(--border-subtle)',
+      background: 'rgba(8, 12, 22, 0.82)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(16, 185, 129, 0.2)',
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      padding: '10px 24px'
+      padding: '11px 28px'
     }}>
       <div style={{
-        maxWidth: 1600,
+        maxWidth: 1680,
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
@@ -58,27 +62,46 @@ export const Navbar: React.FC<NavbarProps> = ({
         flexWrap: 'wrap',
         gap: 16
       }}>
-        {/* Brand & Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Brand & Logo with glowing orb */}
+        <div 
+          onClick={() => setActiveTab('dashboard')}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+        >
           <div style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
             color: '#fff',
-            width: 40,
-            height: 40,
-            borderRadius: 'var(--radius-md)',
+            width: 42,
+            height: 42,
+            borderRadius: 12,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'var(--shadow-glow)'
+            boxShadow: '0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
             <Printer size={22} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-              PROJETO <span style={{ color: 'var(--brand-primary)' }}>BAMBU</span>
-            </h1>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Atelier & Manufatura 3D / Laser / Pintura
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                PROJETO <span className="text-gradient-emerald">BAMBU</span>
+              </h1>
+              <span style={{
+                background: 'rgba(16, 185, 129, 0.12)',
+                color: '#10b981',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                padding: '1px 6px',
+                borderRadius: 4,
+                fontSize: '0.65rem',
+                fontWeight: 800,
+                letterSpacing: '0.04em'
+              }}>
+                STUDIO OS
+              </span>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: 2 }}>
+              Manufatura 3D • Corte Laser • Acabamento Artesanal
             </p>
           </div>
         </div>
@@ -88,10 +111,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: 4,
-          background: 'rgba(10, 13, 20, 0.7)',
-          padding: '4px 6px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
+          background: 'rgba(5, 8, 15, 0.65)',
+          padding: '5px',
+          borderRadius: 14,
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
           overflowX: 'auto'
         }}>
           {tabs.map(tab => {
@@ -105,30 +129,34 @@ export const Navbar: React.FC<NavbarProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 7,
-                  padding: '7px 13px',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: '7px 14px',
+                  borderRadius: 10,
                   fontSize: '0.84rem',
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  background: isActive ? 'var(--bg-surface-hover)' : 'transparent',
-                  border: isActive ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
+                  background: isActive 
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(6, 182, 212, 0.12) 100%)' 
+                    : 'transparent',
+                  border: isActive ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid transparent',
+                  boxShadow: isActive ? '0 0 16px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)' : 'none',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
                   position: 'relative'
                 }}
               >
-                <Icon size={16} color={isActive ? 'var(--brand-primary)' : 'currentColor'} />
+                <Icon size={16} color={isActive ? '#34d399' : 'currentColor'} />
                 <span>{tab.label}</span>
                 {Boolean(tab.badge && tab.badge > 0) && (
                   <span style={{
-                    background: '#ef4444',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: '#fff',
-                    fontSize: '0.68rem',
+                    fontSize: '0.66rem',
                     fontWeight: 800,
                     padding: '1px 6px',
-                    borderRadius: 'var(--radius-full)',
-                    marginLeft: 2
+                    borderRadius: 999,
+                    marginLeft: 2,
+                    boxShadow: '0 0 8px rgba(239, 68, 68, 0.4)'
                   }}>
                     {tab.badge}
                   </span>

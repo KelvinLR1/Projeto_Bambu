@@ -8,12 +8,14 @@ interface OrderModalProps {
   onClose: () => void;
   onOrderCreated: () => void;
   initialItem?: any; // If triggered from Calculator or Product Catalog!
+  initialClientId?: string; // If triggered from Client History!
 }
 
 export const OrderModal: React.FC<OrderModalProps> = ({
   onClose,
   onOrderCreated,
   initialItem,
+  initialClientId,
 }) => {
   const [clients, setClients] = useState<Client[]>([]);
   const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [] });
@@ -23,7 +25,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   // Form State
-  const [clientId, setClientId] = useState('');
+  const [clientId, setClientId] = useState(initialClientId || '');
   const [newClientMode, setNewClientMode] = useState(false);
   const [newClientName, setNewClientName] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
@@ -69,7 +71,9 @@ export const OrderModal: React.FC<OrderModalProps> = ({
       setMaterials(mats);
       setEquipments(eqs);
       setCatalogProducts(prods);
-      if (cls.length > 0 && !clientId) {
+      if (initialClientId) {
+        setClientId(initialClientId);
+      } else if (cls.length > 0 && !clientId) {
         setClientId(cls[0].id);
       }
     } catch (err) {

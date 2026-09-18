@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+import { DashboardPage } from './pages/DashboardPage';
 import { KanbanBoard } from './components/KanbanBoard';
 import { OrdersPage } from './pages/OrdersPage';
 import { ProductsPage } from './pages/ProductsPage';
@@ -19,7 +20,7 @@ import { api } from './services/api';
 import { celebrateSuccess } from './utils/formatters';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<string>('kanban');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [orders, setOrders] = useState<Order[]>([]);
   const [alertsCount, setAlertsCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,6 +28,7 @@ export function App() {
   // Modals
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   const [calcInitialItem, setCalcInitialItem] = useState<any | null>(null);
+  const [orderModalClientId, setOrderModalClientId] = useState<string | undefined>(undefined);
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
@@ -64,8 +66,8 @@ export function App() {
     }
   };
 
-  const handleOpenOrder = (order: Order) => {
-    setSelectedOrderId(order.id);
+  const handleOpenOrder = (orderOrId: Order | string) => {
+    setSelectedOrderId(typeof orderOrId === 'string' ? orderOrId : orderOrId.id);
   };
 
   const handleOpenNewOrderWithItem = (item: any) => {
@@ -98,9 +100,9 @@ export function App() {
   };
 
   return (
-    <div className="app-container">
-      {/* Top Navbar */}
-      <Navbar
+    <div className="app-shell">
+      {/* Sidebar Navigation */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onNewOrder={() => {
@@ -110,8 +112,20 @@ export function App() {
         alertsCount={alertsCount}
       />
 
-      {/* Main Tab Views */}
-      <main style={{ minHeight: 'calc(100vh - 70px)' }}>
+      {/* Main Viewport Content */}
+      <div className="app-main-content">
+        <main style={{ minHeight: '100vh', flex: 1 }}>
+          {activeTab === 'dashboard' && (
+          <DashboardPage
+            onNavigateTab={setActiveTab}
+            onNewOrder={() => {
+              setCalcInitialItem(null);
+              setIsNewOrderModalOpen(true);
+            }}
+            onSelectOrder={handleOpenOrder}
+          />
+        )}
+
         {activeTab === 'kanban' && (
           <div style={{ maxWidth: 1900, margin: '0 auto', padding: '24px' }}>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -159,7 +173,16 @@ export function App() {
 
         {activeTab === 'financial' && <FinancialPage />}
 
-        {activeTab === 'clients' && <ClientsPage />}
+        {activeTab === 'clients' && (
+          <ClientsPage
+            onSelectOrder={handleOpenOrder}
+            onNewOrderForClient={(cid) => {
+              setOrderModalClientId(cid);
+              setCalcInitialItem(null);
+              setIsNewOrderModalOpen(true);
+            }}
+          />
+        )}
 
         {activeTab === 'settings' && <SettingsPage />}
       </main>
@@ -170,9 +193,11 @@ export function App() {
           onClose={() => {
             setIsNewOrderModalOpen(false);
             setCalcInitialItem(null);
+            setOrderModalClientId(undefined);
           }}
           onOrderCreated={loadGlobalData}
           initialItem={calcInitialItem}
+          initialClientId={orderModalClientId}
         />
       )}
 
@@ -195,6 +220,7 @@ export function App() {
           onClose={() => setPrintOrder(null)}
         />
       )}
+      </div>
     </div>
   );
 }

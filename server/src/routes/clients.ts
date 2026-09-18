@@ -20,15 +20,31 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET single client
+// GET single client with full orders and items history
 router.get('/:id', (req, res) => {
   try {
-    const client = db.prepare(`SELECT * FROM clients WHERE id = ?`).get(req.params.id);
+    const client = db.prepare(`
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM orders o WHERE o.client_id = c.id) as orders_count,
+        (SELECT COALESCE(SUM(o.total_price), 0) FROM orders o WHERE o.client_id = c.id) as total_spent
+      FROM clients c
+      WHERE c.id = ?
+    `).get(req.params.id) as any;
+    
     if (!client) return res.status(404).json({ error: 'Cliente não encontrado' });
     
     const orders = db.prepare(`
-      SELECT * FROM orders WHERE client_id = ? ORDER BY created_at DESC
-    `).all(req.params.id);
+      SELECT o.*,
+        (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) as items_count
+      FROM orders o 
+      WHERE o.client_id = ? 
+      ORDER BY o.created_at DESC
+    `).all(req.params.id) as any[];
+
+    const getItems = db.prepare(`SELECT * FROM order_items WHERE order_id = ?`);
+    for (const ord of orders) {
+      ord.items = getItems.all(ord.id);
+    }
 
     res.json({ ...client, orders });
   } catch (error: any) {

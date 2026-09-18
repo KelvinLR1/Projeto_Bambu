@@ -63,14 +63,25 @@ router.post('/', (req, res) => {
 // PUT update equipment
 router.put('/:id', (req, res) => {
   try {
-    const { name, type, power_watts, purchase_cost, lifespan_hours, hourly_depreciation, maintenance_interval_hours, status, notes } = req.body;
+    const { name, type, power_watts, purchase_cost, lifespan_hours, hourly_depreciation, maintenance_interval_hours, total_hours, status, notes } = req.body;
     db.prepare(`
       UPDATE equipments
-      SET name = ?, type = ?, power_watts = ?, purchase_cost = ?, lifespan_hours = ?, hourly_depreciation = ?, maintenance_interval_hours = ?, status = ?, notes = ?
+      SET name = ?, type = ?, power_watts = ?, purchase_cost = ?, lifespan_hours = ?, hourly_depreciation = ?, maintenance_interval_hours = ?, total_hours = COALESCE(?, total_hours), status = ?, notes = ?
       WHERE id = ?
-    `).run(name, type, power_watts, purchase_cost, lifespan_hours, hourly_depreciation, maintenance_interval_hours, status || 'ATIVO', notes, req.params.id);
+    `).run(name, type, power_watts, purchase_cost, lifespan_hours, hourly_depreciation, maintenance_interval_hours, total_hours !== undefined ? total_hours : null, status || 'ATIVO', notes, req.params.id);
 
     res.json(db.prepare(`SELECT * FROM equipments WHERE id = ?`).get(req.params.id));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE equipment
+router.delete('/:id', (req, res) => {
+  try {
+    db.prepare(`DELETE FROM equipment_maintenances WHERE equipment_id = ?`).run(req.params.id);
+    db.prepare(`DELETE FROM equipments WHERE id = ?`).run(req.params.id);
+    res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

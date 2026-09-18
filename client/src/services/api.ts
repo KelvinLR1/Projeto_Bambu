@@ -58,6 +58,7 @@ export const api = {
   getEquipment: (id: string) => request<any>(`/equipments/${id}`),
   createEquipment: (data: any) => request<any>('/equipments', { method: 'POST', body: JSON.stringify(data) }),
   updateEquipment: (id: string, data: any) => request<any>(`/equipments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteEquipment: (id: string) => request<any>(`/equipments/${id}`, { method: 'DELETE' }),
   registerMaintenance: (id: string, data: any) => request<any>(`/equipments/${id}/maintenance`, { method: 'POST', body: JSON.stringify(data) }),
 
   // Orders

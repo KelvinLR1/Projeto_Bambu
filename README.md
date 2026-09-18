@@ -10,7 +10,14 @@ Sistema completo de gestão de pedidos, controle de produção multifuncional (I
 - **Node.js**: v18+ (recomendado v20 ou v24)
 - **npm**: v9+
 
-### 1. Instalação Rápida
+### 1. Inicialização Rápida no Windows (Scripts .BAT)
+Basta dar um duplo clique ou executar no terminal na raiz:
+- **`iniciar.bat`** (ou `start.bat`): Verifica dependências, inicia o servidor e o cliente, e abre automaticamente no navegador ([http://localhost:5173](http://localhost:5173)).
+- **`parar.bat`** (ou `stop.bat`): Encerra os serviços do backend e frontend com segurança e libera as portas 3002 e 5173.
+
+---
+
+### 2. Instalação Manual
 Na raiz do projeto (`Projeto_Bambu`):
 ```bash
 # Instala as dependências da raiz
@@ -23,20 +30,20 @@ cd server && npm install && cd ..
 cd client && npm install && cd ..
 ```
 
-### 2. Popular o Banco de Dados com Dados Realistas (Seed)
+### 3. Popular o Banco de Dados com Dados Realistas (Seed)
 O sistema utiliza **SQLite** com modo WAL (Write-Ahead Logging) de alta performance, sem necessidade de instalar servidores externos de banco. Para inicializar as tabelas e dados reais do atelier:
 ```bash
 npm run seed
 ```
 
-### 3. Rodar em Desenvolvimento (Frontend + Backend)
+### 4. Rodar em Desenvolvimento via Linha de Comando (Frontend + Backend)
 Na raiz do projeto:
 ```bash
 npm run dev
 ```
 - **Frontend SPA (Vite + React):** [http://localhost:5173](http://localhost:5173)
-- **Backend API REST (Express):** [http://localhost:3001](http://localhost:3001)
-- **Healthcheck da API:** [http://localhost:3001/api/health](http://localhost:3001/api/health)
+- **Backend API REST (Express):** [http://localhost:3002](http://localhost:3002)
+- **Healthcheck da API:** [http://localhost:3002/api/health](http://localhost:3002/api/health)
 
 ---
 
@@ -89,12 +96,18 @@ Projeto_Bambu/
 
 ## ⚙️ Funcionalidades em Destaque
 
-### 1. Quadro Kanban de Produção
+### 1. Dashboard Central & Inteligência Analítica (Cockpit Maker)
+- **Visão Macro Consolidada**: Faturamento bruto, lucro líquido, margem real acumulada e valores a receber.
+- **Linha de Produção & Parque de Máquinas**: Total de pedidos ativos na bancada, impressoras rodando vs. em manutenção preventiva e horímetro gravado.
+- **Rentabilidade Comparativa por Tecnologia**: Gráficos de receita, custo e margem comparando FDM, Resina 3D, Laser e Pintura.
+- **Alerta de Insumos Críticos & Eficiência**: Taxa de sucesso de fabricação, custo de refugos e atalhos rápidos de navegação.
+
+### 2. Quadro Kanban de Produção
 - Visualização em 8 colunas: *Orçamento* ➔ *Aprovado* ➔ *Em Impressão* ➔ *Preparação/Pós* ➔ *Em Pintura* ➔ *Secagem/Verniz* ➔ *Pronto* ➔ *Entregue*.
 - Arraste e solte (Drag & Drop) nativo para troca imediata de estágio de oficina.
 - Ao entrar em produção ou conclusão, o sistema dispara **baixa automática de estoque** de filamento/resina e soma as horas no **horômetro da máquina**.
 
-### 2. Módulo de Integração WhatsApp
+### 3. Módulo de Integração WhatsApp
 - Geração instantânea de links universais (`https://wa.me/...`) compatíveis com WhatsApp Web e aplicativo mobile.
 - Templates contextuais prontos para disparo com 1 clique:
   - **Orçamento Oficial**: Resumo dos itens, valor total, sinal de 50% e chave Pix para aprovação.
