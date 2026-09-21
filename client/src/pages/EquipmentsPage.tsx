@@ -230,8 +230,8 @@ export const EquipmentsPage: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                border: isDue ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: isDue ? '0 10px 26px -8px rgba(239, 68, 68, 0.15), 0 4px 12px rgba(0,0,0,0.4)' : undefined,
+                border: isDue ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid var(--border-card)',
+                boxShadow: isDue ? '0 10px 26px -8px rgba(239, 68, 68, 0.25), var(--shadow-sm)' : 'var(--shadow-sm)',
                 position: 'relative',
                 overflow: 'hidden'
               }}
@@ -246,7 +246,7 @@ export const EquipmentsPage: React.FC = () => {
                   height: 3,
                   background: isDue 
                     ? 'linear-gradient(90deg, #ef4444 0%, rgba(239, 68, 68, 0.3) 100%)' 
-                    : 'linear-gradient(90deg, var(--brand-primary) 0%, rgba(16, 185, 129, 0.2) 100%)'
+                    : 'linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-primary-glow) 100%)'
                 }}
               />
 
@@ -324,8 +324,8 @@ export const EquipmentsPage: React.FC = () => {
 
                 {/* Horometer Box */}
                 <div style={{
-                  background: 'rgba(0, 0, 0, 0.25)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 10,
                   padding: '12px 14px',
                   marginBottom: 14,
@@ -359,7 +359,7 @@ export const EquipmentsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="progress-bar-bg" style={{ height: 7, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div className="progress-bar-bg" style={{ height: 7, borderRadius: 999, overflow: 'hidden' }}>
                     <div
                       className="progress-bar-fill"
                       style={{
@@ -381,14 +381,14 @@ export const EquipmentsPage: React.FC = () => {
                 </div>
 
                 {eq.notes && (
-                  <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: 6, marginBottom: 14 }}>
+                  <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: '6px 10px', borderRadius: 6, marginBottom: 14 }}>
                     ℹ️ {eq.notes}
                   </p>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
                 <button
                   className={`btn btn-sm ${isDue ? 'btn-danger' : 'btn-secondary'}`}
                   onClick={() => setSelectedEquipForMaint(eq)}

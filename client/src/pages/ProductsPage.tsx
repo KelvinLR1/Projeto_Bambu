@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product, ProcessType, MaterialFDM, MaterialResin, Equipment } from '../types';
 import { api } from '../services/api';
 import { formatCurrency, PROCESS_MAP } from '../utils/formatters';
@@ -207,34 +207,34 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
   const processMeta = PROCESS_MAP[formData.process_type] || { label: formData.process_type, icon: '📦' };
   const profit = (formData.unit_price || 0) - (formData.unit_cost || 0);
 
-  const iSt: React.CSSProperties = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' as const };
-  const iBtnSt: React.CSSProperties = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 };
+  const iSt: React.CSSProperties = { width: '100%', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' as const };
+  const iBtnSt: React.CSSProperties = { background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 };
 
   if (viewMode === 'editor') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
         {savedToast && (
-          <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 9999, background: '#10b981', color: '#fff', padding: '12px 20px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 32px rgba(16,185,129,0.35)', fontWeight: 600, fontSize: '0.9rem' }}>
+          <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 9999, background: 'var(--brand-primary)', color: '#fff', padding: '12px 20px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 32px var(--brand-primary-glow)', fontWeight: 600, fontSize: '0.9rem' }}>
             <CheckCircle2 size={18} /> Salvo com sucesso!
           </div>
         )}
 
-        <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'rgba(10,13,20,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+        <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'var(--bg-surface)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border-subtle)', padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button onClick={() => setViewMode('list')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500 }}>
               <ArrowLeft size={15} /> Catálogo
             </button>
-            <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1.2rem' }}>/</span>
+            <span style={{ color: 'var(--border-subtle)', fontSize: '1.2rem' }}>/</span>
             <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.9rem' }}>{editingProduct ? formData.name || 'Editar Peça' : 'Nova Peça'}</span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             {editingProduct && (
               <>
-                <button onClick={handleDuplicate} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
+                <button onClick={handleDuplicate} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
                   <Copy size={14} /> Duplicar
                 </button>
                 {onGenerateOrderFromProduct && (
-                  <button onClick={() => onGenerateOrderFromProduct({ ...editingProduct, ...formData })} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
+                  <button onClick={() => onGenerateOrderFromProduct({ ...editingProduct, ...formData })} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
                     <Zap size={14} /> Emitir Pedido
                   </button>
                 )}
@@ -277,7 +277,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
                       const active = formData.process_type === pt;
                       return (
                         <button key={pt} type="button" onClick={() => setFormData(p => ({ ...p, process_type: pt, material_id: '', equipment_id: '' }))}
-                          style={{ flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer', border: active ? '2px solid var(--brand-primary)' : '1px solid rgba(255,255,255,0.1)', background: active ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.03)', color: active ? 'var(--brand-primary)' : 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                          style={{ flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer', border: active ? '2px solid var(--brand-primary)' : '1px solid var(--border-subtle)', background: active ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)', color: active ? 'var(--brand-primary)' : 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                           <span style={{ fontSize: '1rem' }}>{meta.icon}</span>{meta.label}
                         </button>
                       );
@@ -411,7 +411,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Catálogo de Peças</h1>
           <p style={{ margin: '6px 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{products.length} peças cadastradas</p>
         </div>
-        <button onClick={() => handleOpenEditor()} style={{ background: 'var(--brand-primary)', border: 'none', color: '#fff', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem', fontWeight: 700, boxShadow: '0 4px 20px rgba(139,92,246,0.35)' }}>
+        <button onClick={() => handleOpenEditor()} style={{ background: 'var(--brand-primary)', border: 'none', color: '#fff', borderRadius: 10, padding: '10px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem', fontWeight: 700, boxShadow: '0 4px 20px var(--brand-primary-glow)' }}>
           <Plus size={16} /> Nova Peça
         </button>
       </div>
@@ -423,7 +423,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {processFilters.map(f => (
-            <button key={f.key} onClick={() => setSelectedProcess(f.key)} style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', border: selectedProcess === f.key ? '1px solid var(--brand-primary)' : '1px solid rgba(255,255,255,0.1)', background: selectedProcess === f.key ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.03)', color: selectedProcess === f.key ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
+            <button key={f.key} onClick={() => setSelectedProcess(f.key)} style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', border: selectedProcess === f.key ? '1px solid var(--brand-primary)' : '1px solid var(--border-subtle)', background: selectedProcess === f.key ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)', color: selectedProcess === f.key ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
               {f.label}
             </button>
           ))}

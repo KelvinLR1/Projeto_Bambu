@@ -795,8 +795,8 @@ export const SettingsPage: React.FC = () => {
               {/* Template 1 */}
               <div
                 style={{
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 10,
                   padding: 16,
                 }}
@@ -805,7 +805,7 @@ export const SettingsPage: React.FC = () => {
                   <CheckCircle2 size={16} />
                   <span>1. Envio de Orçamento</span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
                   "Olá, [Cliente]! Tudo bem? Segue o orçamento da sua OS [Número]: [Projeto]. Valor Total: R$ [Valor]. Chave Pix para confirmação: [Pix]..."
                 </div>
               </div>
@@ -813,8 +813,8 @@ export const SettingsPage: React.FC = () => {
               {/* Template 2 */}
               <div
                 style={{
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 10,
                   padding: 16,
                 }}
@@ -823,7 +823,7 @@ export const SettingsPage: React.FC = () => {
                   <CheckCircle2 size={16} />
                   <span>2. Produção Iniciada</span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
                   "Olá, [Cliente]! Seu pedido [Número] entrou na linha de produção nas impressoras Bambu Lab! Previsão de conclusão: [Data]..."
                 </div>
               </div>
@@ -831,8 +831,8 @@ export const SettingsPage: React.FC = () => {
               {/* Template 3 */}
               <div
                 style={{
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--bg-surface-elevated)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 10,
                   padding: 16,
                 }}
@@ -841,7 +841,7 @@ export const SettingsPage: React.FC = () => {
                   <CheckCircle2 size={16} />
                   <span>3. Pedido Pronto para Retirada</span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', padding: 12, borderRadius: 8, fontStyle: 'italic', lineHeight: 1.5 }}>
                   "Boas notícias, [Cliente]! Sua encomenda [Número] está 100% pronta e inspecionada! Você já pode retirar no atelier no endereço: [Endereço]..."
                 </div>
               </div>
@@ -862,21 +862,21 @@ export const SettingsPage: React.FC = () => {
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 20 }}>
-              <div style={{ background: 'rgba(0,0,0,0.25)', padding: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', padding: 16, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>MOTOR DE BANCO</div>
                 <div className="mono" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
                   SQLite (Local / Zero Latência)
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.25)', padding: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', padding: 16, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>VERSÃO DO PROJETO BAMBU</div>
                 <div className="mono" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--brand-primary)', marginTop: 4 }}>
                   v0.1.0 Pro Studio
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.25)', padding: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', padding: 16, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700 }}>MODO DE EXECUÇÃO</div>
                 <div className="mono" style={{ fontSize: '1.2rem', fontWeight: 800, color: '#38bdf8', marginTop: 4 }}>
                   Fullstack Node + Vite React

@@ -42,12 +42,12 @@ const getMaterialVisualTheme = (rawHex?: string, isLow?: boolean) => {
 
   // Subtle ambient glow for the top of the card
   const ambientGlow = isLow
-    ? 'rgba(239, 68, 68, 0.08)'
+    ? 'rgba(239, 68, 68, 0.12)'
     : isDark
-      ? 'rgba(148, 163, 184, 0.05)'
+      ? 'rgba(100, 116, 139, 0.1)'
       : isLight
-        ? 'rgba(255, 255, 255, 0.06)'
-        : `${hex}14`; // ~8% opacity
+        ? 'rgba(148, 163, 184, 0.12)'
+        : `color-mix(in srgb, ${hex} 14%, transparent)`;
 
   // 2.5px top accent line
   const topAccent = isLow
@@ -55,23 +55,23 @@ const getMaterialVisualTheme = (rawHex?: string, isLow?: boolean) => {
     : isDark
       ? 'linear-gradient(90deg, #64748b 0%, rgba(100, 116, 139, 0.2) 100%)'
       : isLight
-        ? 'linear-gradient(90deg, #e2e8f0 0%, rgba(226, 232, 240, 0.25) 100%)'
+        ? 'linear-gradient(90deg, #94a3b8 0%, rgba(148, 163, 184, 0.2) 100%)'
         : `linear-gradient(90deg, ${hex} 0%, ${hex}33 100%)`;
 
-  // Safe bar fill that is ALWAYS visible and high-contrast
+  // Safe bar fill that is ALWAYS visible and high-contrast in light and dark themes
   const barFill = isLow
     ? '#ef4444'
     : isDark
-      ? 'linear-gradient(90deg, #64748b, #94a3b8)'
+      ? 'linear-gradient(90deg, #475569, #64748b)'
       : isLight
-        ? 'linear-gradient(90deg, #94a3b8, #f8fafc)'
+        ? 'linear-gradient(90deg, #64748b, #94a3b8)'
         : `linear-gradient(90deg, ${hex}dd, ${hex})`;
 
   // Swatch styling
-  const swatchBorder = isLight ? 'rgba(148, 163, 184, 0.7)' : 'rgba(255, 255, 255, 0.25)';
+  const swatchBorder = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.35)';
   const swatchShadow = isDark
-    ? 'inset 0 1px 2px rgba(255,255,255,0.35), 0 2px 6px rgba(0,0,0,0.7)'
-    : `inset 0 1px 2px rgba(255,255,255,0.4), 0 2px 8px ${hex}55`;
+    ? 'inset 0 1px 2px rgba(255,255,255,0.35), 0 2px 6px rgba(0,0,0,0.35)'
+    : `inset 0 1px 2px rgba(255,255,255,0.4), 0 2px 8px color-mix(in srgb, ${hex} 40%, transparent)`;
 
   return {
     hex,
@@ -635,7 +635,8 @@ export const StockPage: React.FC = () => {
                 <span>{tab.label}</span>
                 <span
                   style={{
-                    background: isActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.06)',
+                    background: isActive ? 'rgba(0,0,0,0.2)' : 'var(--bg-surface-hover)',
+                    border: isActive ? 'none' : '1px solid var(--border-subtle)',
                     padding: '1px 6px',
                     borderRadius: 999,
                     fontSize: '0.7rem',
@@ -652,12 +653,13 @@ export const StockPage: React.FC = () => {
 
         {/* Alternador de Visualização Cards vs Tabela */}
         {activeTab !== 'REFUGOS' && (
-          <div style={{ display: 'flex', background: 'rgba(0, 0, 0, 0.25)', padding: 3, borderRadius: 8, gap: 2 }}>
+          <div style={{ display: 'flex', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: 3, borderRadius: 8, gap: 2 }}>
             <button
               onClick={() => setViewMode('cards')}
               style={{
-                background: viewMode === 'cards' ? 'var(--bg-surface-elevated)' : 'transparent',
+                background: viewMode === 'cards' ? 'var(--bg-card)' : 'transparent',
                 color: viewMode === 'cards' ? 'var(--brand-primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'cards' ? 'var(--shadow-sm)' : 'none',
                 border: 'none',
                 borderRadius: 6,
                 padding: '4px 9px',
@@ -676,8 +678,9 @@ export const StockPage: React.FC = () => {
             <button
               onClick={() => setViewMode('table')}
               style={{
-                background: viewMode === 'table' ? 'var(--bg-surface-elevated)' : 'transparent',
+                background: viewMode === 'table' ? 'var(--bg-card)' : 'transparent',
                 color: viewMode === 'table' ? 'var(--brand-primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none',
                 border: 'none',
                 borderRadius: 6,
                 padding: '4px 9px',
@@ -822,11 +825,11 @@ export const StockPage: React.FC = () => {
                       gap: 14,
                       position: 'relative',
                       overflow: 'hidden',
-                      background: `linear-gradient(180deg, ${theme.ambientGlow} 0%, rgba(13, 19, 32, 0.88) 55px, rgba(10, 15, 26, 0.95) 100%)`,
-                      border: isLow ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: `linear-gradient(180deg, ${theme.ambientGlow} 0%, var(--bg-card) 60px, var(--bg-card) 100%)`,
+                      border: isLow ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid var(--border-card)',
                       boxShadow: isLow
-                        ? '0 10px 24px -8px rgba(239, 68, 68, 0.15), 0 4px 12px rgba(0, 0, 0, 0.4)'
-                        : '0 10px 24px -8px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                        ? '0 10px 24px -8px rgba(239, 68, 68, 0.25), var(--shadow-sm)'
+                        : 'var(--shadow-md)',
                       transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
@@ -881,7 +884,8 @@ export const StockPage: React.FC = () => {
                                     gap: 4,
                                     padding: '1px 6px',
                                     borderRadius: 4,
-                                    background: 'rgba(255,255,255,0.06)',
+                                    background: 'var(--bg-surface-hover)',
+                                    border: '1px solid var(--border-subtle)',
                                     fontSize: '0.68rem',
                                     color: 'var(--text-secondary)',
                                   }}
@@ -938,7 +942,7 @@ export const StockPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                        <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, overflow: 'hidden' }}>
                           <div
                             style={{
                               height: '100%',
@@ -958,7 +962,7 @@ export const StockPage: React.FC = () => {
                     </div>
 
                     {/* Bottom Actions */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, borderTop: '1px solid var(--border-subtle)' }}>
                       <button
                         className="btn btn-secondary btn-sm"
                         onClick={() => handleQuickAdjust('materials_fdm', f.id, 1000, f.name)}
@@ -969,6 +973,7 @@ export const StockPage: React.FC = () => {
                       </button>
 
                       <button
+                        className="btn btn-secondary btn-sm"
                         onClick={() => {
                           setAdjustTarget({ table: 'materials_fdm', id: f.id, name: f.name, current: f.stock_weight_g, unit: 'g' });
                           setAdjustAmount(f.stock_weight_g);
@@ -976,13 +981,8 @@ export const StockPage: React.FC = () => {
                           setIsAdjustModalOpen(true);
                         }}
                         style={{
-                          background: 'transparent',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          color: 'var(--text-secondary)',
-                          padding: '4px 10px',
-                          borderRadius: 6,
                           fontSize: '0.74rem',
-                          cursor: 'pointer',
+                          padding: '4px 10px',
                         }}
                       >
                         Ajustar
@@ -1038,7 +1038,7 @@ export const StockPage: React.FC = () => {
                           {f.stock_weight_g}g
                         </td>
                         <td style={{ width: 120 }}>
-                          <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                          <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, overflow: 'hidden' }}>
                             <div
                               style={{ height: '100%', width: `${percent}%`, background: theme.barFill, borderRadius: 999 }}
                             />
@@ -1103,11 +1103,11 @@ export const StockPage: React.FC = () => {
                       gap: 14,
                       position: 'relative',
                       overflow: 'hidden',
-                      background: `linear-gradient(180deg, ${theme.ambientGlow} 0%, rgba(13, 19, 32, 0.88) 55px, rgba(10, 15, 26, 0.95) 100%)`,
-                      border: isLow ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: `linear-gradient(180deg, ${theme.ambientGlow} 0%, var(--bg-card) 60px, var(--bg-card) 100%)`,
+                      border: isLow ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid var(--border-card)',
                       boxShadow: isLow
-                        ? '0 10px 24px -8px rgba(239, 68, 68, 0.15), 0 4px 12px rgba(0, 0, 0, 0.4)'
-                        : '0 10px 24px -8px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                        ? '0 10px 24px -8px rgba(239, 68, 68, 0.25), var(--shadow-sm)'
+                        : 'var(--shadow-md)',
                       transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
@@ -1162,7 +1162,8 @@ export const StockPage: React.FC = () => {
                                     gap: 4,
                                     padding: '1px 6px',
                                     borderRadius: 4,
-                                    background: 'rgba(255,255,255,0.06)',
+                                    background: 'var(--bg-surface-hover)',
+                                    border: '1px solid var(--border-subtle)',
                                     fontSize: '0.68rem',
                                     color: 'var(--text-secondary)',
                                   }}
@@ -1219,7 +1220,7 @@ export const StockPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                        <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, overflow: 'hidden' }}>
                           <div
                             style={{
                               height: '100%',
@@ -1239,7 +1240,7 @@ export const StockPage: React.FC = () => {
                     </div>
 
                     {/* Bottom Actions */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, borderTop: '1px solid var(--border-subtle)' }}>
                       <button
                         className="btn btn-secondary btn-sm"
                         onClick={() => handleQuickAdjust('materials_resin', r.id, 1000, r.name)}
@@ -1250,6 +1251,7 @@ export const StockPage: React.FC = () => {
                       </button>
 
                       <button
+                        className="btn btn-secondary btn-sm"
                         onClick={() => {
                           setAdjustTarget({ table: 'materials_resin', id: r.id, name: r.name, current: r.stock_volume_ml, unit: 'ml' });
                           setAdjustAmount(r.stock_volume_ml);
@@ -1257,13 +1259,8 @@ export const StockPage: React.FC = () => {
                           setIsAdjustModalOpen(true);
                         }}
                         style={{
-                          background: 'transparent',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          color: 'var(--text-secondary)',
-                          padding: '4px 10px',
-                          borderRadius: 6,
                           fontSize: '0.74rem',
-                          cursor: 'pointer',
+                          padding: '4px 10px',
                         }}
                       >
                         Ajustar
@@ -1319,7 +1316,7 @@ export const StockPage: React.FC = () => {
                           {r.stock_volume_ml}ml
                         </td>
                         <td style={{ width: 120 }}>
-                          <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                          <div className="progress-bar-bg" style={{ height: 6, borderRadius: 999, overflow: 'hidden' }}>
                             <div
                               style={{ height: '100%', width: `${percent}%`, background: theme.barFill, borderRadius: 999 }}
                             />
@@ -1434,7 +1431,7 @@ export const StockPage: React.FC = () => {
                   <tr key={f.id}>
                     <td style={{ fontWeight: 700 }}>{f.name}</td>
                     <td>
-                      <span style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 4, fontSize: '0.74rem' }}>
+                      <span style={{ background: 'var(--bg-surface-hover)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: 4, fontSize: '0.74rem' }}>
                         {f.category}
                       </span>
                     </td>
@@ -1960,9 +1957,9 @@ export const StockPage: React.FC = () => {
                           padding: '6px',
                           fontSize: '0.74rem',
                           fontWeight: adjustMode === m.id ? 700 : 500,
-                          background: adjustMode === m.id ? 'var(--bg-surface-elevated)' : 'transparent',
-                          border: adjustMode === m.id ? '1px solid var(--brand-primary)' : '1px solid rgba(255,255,255,0.08)',
-                          color: adjustMode === m.id ? '#10b981' : 'var(--text-secondary)',
+                          background: adjustMode === m.id ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface)',
+                          border: adjustMode === m.id ? '1px solid var(--brand-primary)' : '1px solid var(--border-subtle)',
+                          color: adjustMode === m.id ? 'var(--brand-primary)' : 'var(--text-secondary)',
                           borderRadius: 6,
                           cursor: 'pointer',
                         }}

@@ -348,12 +348,13 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
           </div>
 
           {/* Alternador Lista vs Cards */}
-          <div style={{ display: 'flex', background: 'rgba(0, 0, 0, 0.3)', padding: 3, borderRadius: 8, gap: 2 }}>
+          <div style={{ display: 'flex', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: 3, borderRadius: 8, gap: 2 }}>
             <button
               onClick={() => setViewMode('table')}
               style={{
-                background: viewMode === 'table' ? 'var(--bg-surface-elevated)' : 'transparent',
+                background: viewMode === 'table' ? 'var(--bg-card)' : 'transparent',
                 color: viewMode === 'table' ? 'var(--brand-primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none',
                 border: 'none',
                 borderRadius: 6,
                 padding: '5px 10px',
@@ -373,8 +374,9 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
             <button
               onClick={() => setViewMode('cards')}
               style={{
-                background: viewMode === 'cards' ? 'var(--bg-surface-elevated)' : 'transparent',
+                background: viewMode === 'cards' ? 'var(--bg-card)' : 'transparent',
                 color: viewMode === 'cards' ? 'var(--brand-primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'cards' ? 'var(--shadow-sm)' : 'none',
                 border: 'none',
                 borderRadius: 6,
                 padding: '5px 10px',
@@ -385,7 +387,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                 fontSize: '0.76rem',
                 fontWeight: 600,
               }}
-              title="Visualização em Grade de Cards"
+              title="Visualização em Cards"
             >
               <LayoutGrid size={14} />
               <span>Cards</span>

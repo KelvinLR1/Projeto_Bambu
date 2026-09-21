@@ -125,12 +125,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               width: 38,
               height: 38,
               borderRadius: 11,
-              background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+              background: 'linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 0 16px var(--brand-primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
               flexShrink: 0,
             }}
           >
@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                  PROJETO <span className="text-gradient-emerald">BAMBU</span>
+                  PROJETO <span style={{ color: 'var(--brand-primary)' }}>BAMBU</span>
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
@@ -151,8 +151,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    background: '#10b981',
-                    boxShadow: '0 0 6px #10b981',
+                    background: 'var(--brand-primary)',
+                    boxShadow: '0 0 6px var(--brand-primary)',
                     display: 'inline-block',
                   }}
                 />
@@ -240,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 style={{
                   height: 1,
-                  background: 'rgba(255, 255, 255, 0.06)',
+                  background: 'var(--border-subtle)',
                   margin: '6px 4px 10px',
                 }}
               />
@@ -309,9 +309,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon
                         size={17}
-                        color={isActive ? '#34d399' : 'currentColor'}
+                        color={isActive ? 'var(--brand-primary)' : 'currentColor'}
                         style={{
-                          filter: isActive ? 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.5))' : 'none',
+                          filter: isActive ? 'drop-shadow(0 0 6px var(--brand-primary-glow))' : 'none',
                           flexShrink: 0,
                         }}
                       />
@@ -338,34 +338,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          flex: 1,
-                          overflow: 'hidden',
+                          width: '100%',
+                          minWidth: 0,
                         }}
                       >
                         <span
                           style={{
                             fontSize: '0.84rem',
                             fontWeight: isActive ? 700 : 500,
-                            whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
                         >
                           {item.label}
                         </span>
 
+                        {/* Badge de contador / alertas */}
                         {Boolean(item.badge && item.badge > 0) && (
                           <span
                             style={{
-                              background: item.badgeDanger ? '#ef4444' : 'var(--brand-primary)',
-                              color: '#ffffff',
-                              padding: '1px 6px',
-                              borderRadius: 999,
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
                               fontSize: '0.68rem',
                               fontWeight: 800,
-                              marginLeft: 6,
-                              flexShrink: 0,
-                              boxShadow: item.badgeDanger ? '0 0 8px rgba(239, 68, 68, 0.4)' : undefined,
+                              padding: '1px 6px',
+                              borderRadius: 999,
+                              minWidth: 18,
+                              textAlign: 'center',
+                              boxShadow: '0 0 8px rgba(239, 68, 68, 0.25)',
                             }}
                           >
                             {item.badge}
@@ -385,8 +387,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div
         style={{
           padding: isCollapsed ? '14px 10px' : '14px 16px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-          background: 'rgba(0, 0, 0, 0.25)',
+          borderTop: '1px solid var(--border-subtle)',
+          background: 'var(--bg-surface-elevated)',
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
@@ -429,7 +431,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             width: '100%',
             padding: '7px 10px',
             background: 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: 8,
             color: 'var(--text-muted)',
             fontSize: '0.76rem',
@@ -438,11 +440,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             transition: 'all 0.15s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.borderColor = 'var(--border-highlight)';
+            e.currentTarget.style.color = 'var(--text-primary)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.borderColor = 'var(--border-subtle)';
             e.currentTarget.style.color = 'var(--text-muted)';
           }}
           title={isCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
