@@ -196,7 +196,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
   }, [clients, searchTerm, filterType]);
 
   return (
-    <div style={{ maxWidth: 1680, margin: '0 auto', padding: '24px 28px' }}>
+    <div className="page-container">
       {/* Toast Notification */}
       {toastMessage && (
         <div

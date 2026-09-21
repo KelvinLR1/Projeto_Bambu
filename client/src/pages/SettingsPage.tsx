@@ -85,7 +85,7 @@ export const SettingsPage: React.FC = () => {
   const currentThemeObj = SYSTEM_THEMES.find(t => t.id === currentThemeId) || SYSTEM_THEMES[0];
 
   return (
-    <div style={{ maxWidth: 1440, margin: '0 auto', padding: '24px 28px' }}>
+    <div className="page-container">
       {/* Toast Notification */}
       {themeSuccessMsg && (
         <div

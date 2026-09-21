@@ -524,61 +524,119 @@ select.form-control {
 /* Kanban Board Styling */
 .kanban-board {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   overflow-x: auto;
   padding-bottom: 24px;
   min-height: calc(100vh - 190px);
 }
 
 .kanban-column {
-  flex: 0 0 310px;
-  background: rgba(17, 23, 38, 0.6);
+  flex: 0 0 300px;
+  background: rgba(13, 19, 32, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 200px);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Colored accent bar at the top of each column */
+.kanban-column::before {
+  content: '';
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: var(--col-accent, rgba(255,255,255,0.1));
+  flex-shrink: 0;
+}
+
+.kanban-column:hover {
+  border-color: color-mix(in srgb, var(--col-accent, rgba(255,255,255,0.1)) 40%, var(--border-subtle));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--col-accent, transparent) 20%, transparent);
 }
 
 .kanban-header {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .kanban-body {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
   flex: 1;
 }
 
 .kanban-card {
-  background: #172136;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 24, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 13px;
   cursor: grab;
-  transition: all 0.2s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle left accent strip on cards */
+.kanban-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--col-accent, rgba(255,255,255,0.12));
+  border-radius: 3px 0 0 3px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
 .kanban-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--shadow-md);
+  background: rgba(20, 30, 52, 0.95);
+  border-color: color-mix(in srgb, var(--col-accent, rgba(255,255,255,0.2)) 50%, rgba(255,255,255,0.1));
+  box-shadow: var(--shadow-md), 0 0 20px -6px color-mix(in srgb, var(--col-accent, transparent) 35%, transparent);
+}
+
+.kanban-card:hover::before {
+  opacity: 1;
 }
 
 .kanban-card.is-dragging {
   opacity: 0.4;
   cursor: grabbing;
+}
+
+/* Light mode adaptations for Kanban */
+[data-theme-mode="light"] .kanban-column {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme-mode="light"] .kanban-header {
+  border-bottom-color: rgba(0,0,0,0.07);
+}
+[data-theme-mode="light"] .kanban-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme-mode="light"] .kanban-card:hover {
+  background: #f8fafc;
+  border-color: color-mix(in srgb, var(--col-accent, rgba(0,0,0,0.15)) 60%, rgba(0,0,0,0.08));
 }
 
 /* Tables */
@@ -598,24 +656,57 @@ select.form-control {
 }
 
 .data-table th {
-  background: #162035;
-  color: var(--text-secondary);
-  font-weight: 600;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-primary) 10%, var(--bg-surface-elevated)) 0%,
+    var(--bg-surface-elevated) 100%
+  );
+  color: var(--text-primary);
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  padding: 13px 18px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Strong accent border under thead */
+.data-table thead tr:last-child th {
+  border-bottom: 2px solid color-mix(in srgb, var(--brand-primary) 55%, transparent);
+  box-shadow:
+    0 4px 16px -4px color-mix(in srgb, var(--brand-primary) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--brand-primary) 18%, transparent);
 }
 
 .data-table td {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
 
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
 .data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--brand-primary) 5%, transparent);
+}
+
+/* Light mode table header */
+[data-theme-mode="light"] .data-table th {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface-elevated)) 0%,
+    var(--bg-surface-elevated) 100%
+  );
+  color: var(--text-primary);
+}
+[data-theme-mode="light"] .data-table thead tr:last-child th {
+  border-bottom: 2px solid color-mix(in srgb, var(--brand-primary) 50%, transparent);
+  box-shadow: 0 3px 12px -4px color-mix(in srgb, var(--brand-primary) 18%, transparent);
 }
 
 /* Progress bar */
@@ -912,6 +1003,14 @@ select.form-control {
   display: flex;
   flex-direction: column;
   position: relative;
+}
+
+/* Standardized page container — used by all pages */
+.page-container {
+  width: 100%;
+  flex: 1;
+  padding: 24px 28px 40px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {

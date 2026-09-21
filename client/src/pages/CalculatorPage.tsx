@@ -222,7 +222,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({ onGenerateOrder 
   };
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px' }}>
+    <div className="page-container">
       {/* Title */}
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Calculadora de Custos & Precificação Maker</h2>

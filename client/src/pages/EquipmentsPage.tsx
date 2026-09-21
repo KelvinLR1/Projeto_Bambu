@@ -172,7 +172,7 @@ export const EquipmentsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 1600, margin: '0 auto', padding: '24px 28px' }}>
+    <div className="page-container">
       {/* Toast Notification */}
       {toastMessage && (
         <div

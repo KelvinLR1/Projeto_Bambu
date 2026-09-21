@@ -126,7 +126,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const recentOrders = useMemo(() => orders.slice(0, 5), [orders]);
 
   return (
-    <div style={{ maxWidth: 1560, margin: '0 auto', padding: '24px 28px' }}>
+    <div className="page-container">
       {/* 1. Header Limpo & Intuitivo */}
       <div
         style={{

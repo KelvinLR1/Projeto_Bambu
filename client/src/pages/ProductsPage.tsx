@@ -405,7 +405,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
   }
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px 80px' }}>
+    <div className="page-container">
       <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Catálogo de Peças</h1>

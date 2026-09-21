@@ -80,10 +80,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             onDragLeave={handleDragLeave}
             onDrop={e => handleDrop(e, col.id)}
             style={{
+              '--col-accent': col.color,
               borderColor: isTarget ? col.color : undefined,
-              background: isTarget ? 'rgba(25, 36, 58, 0.85)' : undefined,
+              background: isTarget
+                ? `color-mix(in srgb, ${col.color} 8%, rgba(13, 19, 32, 0.85))`
+                : undefined,
               transition: 'all 0.2s ease',
-            }}
+            } as React.CSSProperties}
           >
             {/* Column Header */}
             <div className="kanban-header">
@@ -137,6 +140,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       onDragStart={e => handleDragStart(e, order.id)}
                       onClick={() => onSelectOrder(order)}
                       className={`kanban-card ${draggedOrderId === order.id ? 'is-dragging' : ''}`}
+                      style={{ '--col-accent': col.color } as React.CSSProperties}
                     >
                       {/* OS Number & Status badge */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

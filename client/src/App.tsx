@@ -127,7 +127,7 @@ export function App() {
         )}
 
         {activeTab === 'kanban' && (
-          <div style={{ maxWidth: 1900, margin: '0 auto', padding: '24px' }}>
+          <div className="page-container">
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Fluxo de Produção do Atelier (Kanban)</h2>

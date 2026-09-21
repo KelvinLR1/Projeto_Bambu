@@ -436,7 +436,7 @@ export const StockPage: React.FC = () => {
   }, [activeTab, filteredFdm, filteredResin, filteredLaser, filteredFinishing, filteredFailures]);
 
   return (
-    <div style={{ maxWidth: 1560, margin: '0 auto', padding: '24px 28px' }}>
+    <div className="page-container">
       {/* Toast */}
       {toastMessage && (
         <div

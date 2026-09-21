@@ -29,7 +29,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
   });
 
   return (
-    <div style={{ maxWidth: 1600, margin: '0 auto', padding: '24px' }}>
+    <div className="page-container">
       {/* Header & Filters */}
       <div style={{
         display: 'flex',

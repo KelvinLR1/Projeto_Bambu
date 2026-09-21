@@ -68,7 +68,7 @@ export const FinancialPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 1600, margin: '0 auto', padding: '24px' }}>
+    <div className="page-container">
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <div>
