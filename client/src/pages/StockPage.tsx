@@ -628,7 +628,8 @@ export const StockPage: React.FC = () => {
                   border: isActive && tab.danger ? '1px solid rgba(239, 68, 68, 0.35)' : 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'all 0.18s ease',
+                  boxShadow: isActive ? (tab.danger ? '0 4px 14px rgba(239, 68, 68, 0.25)' : '0 4px 14px var(--brand-primary-glow)') : 'none',
                 }}
               >
                 {tab.icon}
@@ -800,9 +801,13 @@ export const StockPage: React.FC = () => {
       )}
 
       {/* ==========================================
-          TAB 1: FILAMENTOS FDM
+          TAB CONTENT WRAPPER ANIMATED
       ========================================== */}
-      {activeTab === 'FDM' && activeCount > 0 && (
+      <div key={activeTab} className="tab-pane-animated">
+        {/* ==========================================
+            TAB 1: FILAMENTOS FDM
+        ========================================== */}
+        {activeTab === 'FDM' && activeCount > 0 && (
         <>
           {viewMode === 'cards' ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14 }}>
@@ -1539,6 +1544,7 @@ export const StockPage: React.FC = () => {
           )}
         </div>
       )}
+      </div>
 
       {/* ==========================================
           MODAL: REGISTRAR REFUGOS

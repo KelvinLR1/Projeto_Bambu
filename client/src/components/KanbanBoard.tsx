@@ -90,27 +90,40 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           >
             {/* Column Header */}
             <div className="kanban-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
                 <span style={{
                   color: col.color,
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  flexShrink: 0
                 }}>
-                  <Icon size={16} />
+                  <Icon size={15} />
                 </span>
-                <span style={{ color: 'var(--text-primary)' }}>{col.label}</span>
+                <span style={{
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.25,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}>
+                  {col.label}
+                </span>
                 <span style={{
                   background: 'rgba(255, 255, 255, 0.08)',
-                  padding: '1px 7px',
+                  padding: '1px 6px',
                   borderRadius: 'var(--radius-full)',
-                  fontSize: '0.72rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
-                  color: 'var(--text-secondary)'
+                  color: 'var(--text-secondary)',
+                  flexShrink: 0
                 }}>
                   {colOrders.length}
                 </span>
               </div>
-              <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                 {formatCurrency(colTotal)}
               </span>
             </div>

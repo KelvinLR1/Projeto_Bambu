@@ -86,26 +86,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const sidebarWidth = isCollapsed ? 76 : 264;
 
   return (
-    <aside
-      className="no-print sidebar-container"
-      style={{
-        width: sidebarWidth,
-        minWidth: sidebarWidth,
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-        left: 0,
-        zIndex: 100,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border-subtle)',
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15)',
-        transition: 'width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
-        overflowX: 'hidden',
-      }}
-    >
+    <>
+      <aside
+        className="no-print sidebar-container"
+        style={{
+          width: sidebarWidth,
+          minWidth: sidebarWidth,
+          height: '100vh',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          zIndex: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          background: 'var(--bg-surface)',
+          borderRight: '1px solid var(--border-subtle)',
+          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15)',
+          transition: 'width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
+          overflowX: 'hidden',
+        }}
+      >
       {/* 1. Header: Marca & Atelier */}
       <div style={{ padding: isCollapsed ? '18px 14px' : '20px 20px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
         <div
@@ -454,5 +456,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
     </aside>
+    {/* Spacer com largura sincronizada para manter o layout em flex do app-shell */}
+    <div
+      aria-hidden="true"
+      className="sidebar-spacer no-print"
+      style={{
+        width: sidebarWidth,
+        minWidth: sidebarWidth,
+        flexShrink: 0,
+        transition: 'width 0.24s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    />
+  </>
   );
 };

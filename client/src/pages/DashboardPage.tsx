@@ -197,18 +197,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ background: 'rgba(239, 68, 68, 0.15)', padding: 6, borderRadius: '50%' }}>
-              <AlertTriangle size={17} color="#f87171" />
+              <AlertTriangle size={17} color="#ef4444" />
             </div>
             <div>
-              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#f87171' }}>
+              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#ef4444' }}>
                 {stockData.alerts.length} insumo(s) abaixo do estoque mínimo
               </span>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginLeft: 8 }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginLeft: 8 }}>
                 Clique para ver a lista e reabastecer a oficina.
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#f87171', fontSize: '0.8rem', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#ef4444', fontSize: '0.8rem', fontWeight: 600 }}>
             <span>Verificar</span>
             <ChevronRight size={16} />
           </div>
@@ -235,8 +235,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
               Faturamento Bruto
             </span>
-            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: 6, borderRadius: 8 }}>
-              <DollarSign size={16} color="#10b981" />
+            <div style={{ background: 'color-mix(in srgb, var(--brand-primary) 12%, transparent)', padding: 6, borderRadius: 8 }}>
+              <DollarSign size={16} color="var(--brand-primary)" />
             </div>
           </div>
           <div className="mono" style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--brand-primary)', marginTop: 8 }}>
@@ -244,7 +244,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: '0.76rem' }}>
             <span style={{ color: 'var(--text-secondary)' }}>
-              Lucro: <strong style={{ color: '#34d399' }}>{formatCurrency(financial?.netProfit || 0)}</strong>
+              Lucro: <strong style={{ color: 'var(--brand-primary)' }}>{formatCurrency(financial?.netProfit || 0)}</strong>
             </span>
             <span style={{ color: 'var(--text-muted)' }}>
               {financial?.profitMargin || 0}% margem
@@ -274,7 +274,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <span style={{ color: 'var(--text-secondary)' }}>
               {pipeline.counts.EM_IMPRESSAO || 0} imprimindo agora
             </span>
-            <span style={{ color: '#22c55e', fontWeight: 600 }}>
+            <span style={{ color: 'var(--brand-primary)', fontWeight: 600 }}>
               {pipeline.ready} prontas
             </span>
           </div>
@@ -291,8 +291,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
               Parque de Máquinas
             </span>
-            <div style={{ background: machineStats.maintenanceDue > 0 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)', padding: 6, borderRadius: 8 }}>
-              <Wrench size={16} color={machineStats.maintenanceDue > 0 ? '#f59e0b' : '#10b981'} />
+            <div style={{ background: machineStats.maintenanceDue > 0 ? 'rgba(245, 158, 11, 0.1)' : 'color-mix(in srgb, var(--brand-primary) 12%, transparent)', padding: 6, borderRadius: 8 }}>
+              <Wrench size={16} color={machineStats.maintenanceDue > 0 ? '#f59e0b' : 'var(--brand-primary)'} />
             </div>
           </div>
           <div className="mono" style={{ fontSize: '1.65rem', fontWeight: 800, color: machineStats.maintenanceDue > 0 ? '#f59e0b' : 'var(--text-primary)', marginTop: 8 }}>
@@ -302,7 +302,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <span style={{ color: 'var(--text-secondary)' }}>
               {machineStats.totalHours.toFixed(0)}h acumuladas
             </span>
-            <span style={{ color: machineStats.maintenanceDue > 0 ? '#f59e0b' : '#10b981', fontWeight: 600 }}>
+            <span style={{ color: machineStats.maintenanceDue > 0 ? '#f59e0b' : 'var(--brand-primary)', fontWeight: 600 }}>
               {machineStats.maintenanceDue > 0 ? `${machineStats.maintenanceDue} em revisão` : '100% Calibradas'}
             </span>
           </div>
@@ -319,18 +319,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
               Insumos em Estoque
             </span>
-            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: 6, borderRadius: 8 }}>
-              <Package size={16} color="#a855f7" />
+            <div style={{ background: 'rgba(139, 92, 246, 0.12)', padding: 6, borderRadius: 8 }}>
+              <Package size={16} color="var(--brand-purple, #8b5cf6)" />
             </div>
           </div>
-          <div className="mono" style={{ fontSize: '1.65rem', fontWeight: 800, color: '#c084fc', marginTop: 8 }}>
+          <div className="mono" style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--brand-purple, #8b5cf6)', marginTop: 8 }}>
             {formatCurrency(stockData?.summary?.totalStockValue || 0)}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: '0.76rem' }}>
             <span style={{ color: 'var(--text-secondary)' }}>
               {(stockData?.fdm?.length || 0) + (stockData?.resin?.length || 0)} materiais
             </span>
-            <span style={{ color: (stockData?.alerts?.length || 0) > 0 ? '#f87171' : '#34d399', fontWeight: 600 }}>
+            <span style={{ color: (stockData?.alerts?.length || 0) > 0 ? '#ef4444' : 'var(--brand-primary)', fontWeight: 600 }}>
               {(stockData?.alerts?.length || 0) > 0 ? `${stockData.alerts.length} abaixo do mín.` : 'Estoque seguro'}
             </span>
           </div>
@@ -362,11 +362,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { status: 'ORCAMENTO', label: 'Orçamentos em Negociação', count: pipeline.counts.ORCAMENTO || 0, color: '#94a3b8' },
+              { status: 'ORCAMENTO', label: 'Orçamentos em Negociação', count: pipeline.counts.ORCAMENTO || 0, color: '#64748b' },
               { status: 'APROVADO', label: 'Aprovados (Aguardando Máquina)', count: pipeline.counts.APROVADO || 0, color: '#3b82f6' },
-              { status: 'EM_IMPRESSAO', label: 'Em Impressão 3D / Produção', count: pipeline.counts.EM_IMPRESSAO || 0, color: '#10b981' },
-              { status: 'POS_PROCESSAMENTO', label: 'Preparação, Pintura & Secagem', count: (pipeline.counts.EM_PREPARACAO || 0) + (pipeline.counts.EM_PINTURA || 0) + (pipeline.counts.SECAGEM_VERNIZ || 0), color: '#a855f7' },
-              { status: 'PRONTO', label: 'Prontos para Retirada / Envio', count: pipeline.counts.PRONTO || 0, color: '#22c55e' },
+              { status: 'EM_IMPRESSAO', label: 'Em Impressão 3D / Produção', count: pipeline.counts.EM_IMPRESSAO || 0, color: 'var(--brand-primary)' },
+              { status: 'POS_PROCESSAMENTO', label: 'Preparação, Pintura & Secagem', count: (pipeline.counts.EM_PREPARACAO || 0) + (pipeline.counts.EM_PINTURA || 0) + (pipeline.counts.SECAGEM_VERNIZ || 0), color: 'var(--brand-purple, #8b5cf6)' },
+              { status: 'PRONTO', label: 'Prontos para Retirada / Envio', count: pipeline.counts.PRONTO || 0, color: '#10b981' },
             ].map((step, idx) => {
               const totalOrders = Math.max(orders.length, 1);
               const percentage = Math.min(100, Math.round((step.count / totalOrders) * 100));
@@ -374,23 +374,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               return (
                 <div
                   key={idx}
+                  className="dashboard-row-card interactive"
                   onClick={() => onNavigateTab('kanban')}
-                  style={{
-                    background: 'rgba(0,0,0,0.18)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    borderRadius: 10,
-                    padding: '10px 14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.18)';
-                  }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -448,12 +433,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               return (
                 <div
                   key={p.process_type}
-                  style={{
-                    background: 'rgba(0,0,0,0.18)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    borderRadius: 10,
-                    padding: '12px 14px',
-                  }}
+                  className="dashboard-row-card"
+                  style={{ padding: '12px 14px' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -469,8 +450,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       </span>
                       <span
                         style={{
-                          background: 'rgba(16, 185, 129, 0.12)',
-                          color: '#10b981',
+                          background: 'color-mix(in srgb, var(--brand-primary) 12%, transparent)',
+                          color: 'var(--brand-primary)',
                           padding: '1px 6px',
                           borderRadius: 4,
                           fontSize: '0.72rem',
@@ -502,7 +483,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                     <span>Insumos: {formatCurrency(p.cost || 0)}</span>
                     <span>
-                      Lucro Líquido: <strong style={{ color: '#34d399' }}>{formatCurrency(p.profit || (p.revenue - p.cost))}</strong>
+                      Lucro Líquido: <strong style={{ color: 'var(--brand-primary)' }}>{formatCurrency(p.profit || (p.revenue - p.cost))}</strong>
                     </span>
                   </div>
                 </div>
@@ -540,25 +521,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               {recentOrders.map((ord) => (
                 <div
                   key={ord.id}
+                  className="dashboard-row-card interactive"
                   onClick={() => onSelectOrder(ord)}
                   style={{
-                    background: 'rgba(0,0,0,0.18)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    borderRadius: 10,
-                    padding: '11px 14px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.18)';
                   }}
                 >
                   <div>
@@ -577,7 +545,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div className="mono" style={{ fontWeight: 800, fontSize: '0.95rem', color: '#10b981' }}>
+                      <div className="mono" style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--brand-primary)' }}>
                         {formatCurrency(ord.total_price)}
                       </div>
                       <span className={`status-pill status-${ord.status}`} style={{ fontSize: '0.64rem', padding: '1px 6px', marginTop: 2 }}>
@@ -625,23 +593,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               return (
                 <div
                   key={eq.id}
+                  className="dashboard-row-card"
                   style={{
-                    background: 'rgba(0,0,0,0.18)',
-                    border: isDue ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
-                    borderRadius: 10,
-                    padding: '11px 14px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 6,
+                    borderColor: isDue ? 'rgba(245, 158, 11, 0.4)' : undefined,
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Printer size={15} color={isDue ? '#f59e0b' : '#10b981'} />
+                      <Printer size={15} color={isDue ? '#f59e0b' : 'var(--brand-primary)'} />
                       <span style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text-primary)' }}>
                         {eq.name}
                       </span>
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: 4 }}>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', background: 'var(--border-subtle)', padding: '1px 6px', borderRadius: 4 }}>
                         {eq.type}
                       </span>
                     </div>
@@ -656,8 +622,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                           fontWeight: 700,
                           padding: '1px 6px',
                           borderRadius: 4,
-                          background: isDue ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                          color: isDue ? '#f59e0b' : '#10b981',
+                          background: isDue ? 'rgba(245, 158, 11, 0.15)' : 'color-mix(in srgb, var(--brand-primary) 15%, transparent)',
+                          color: isDue ? '#f59e0b' : 'var(--brand-primary)',
                         }}
                       >
                         {isDue ? 'Revisão' : 'Calibrada'}
@@ -670,7 +636,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       className="progress-bar-fill"
                       style={{
                         width: `${progress}%`,
-                        background: isDue ? '#f59e0b' : '#10b981',
+                        background: isDue ? '#f59e0b' : 'var(--brand-primary)',
                       }}
                     />
                   </div>

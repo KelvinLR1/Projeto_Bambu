@@ -27,14 +27,24 @@ import { ClientHistoryModal } from '../components/ClientHistoryModal';
 interface ClientsPageProps {
   onSelectOrder?: (orderId: string) => void;
   onNewOrderForClient?: (clientId: string) => void;
+  onSelectClient?: (clientId: string) => void;
 }
 
 export const ClientsPage: React.FC<ClientsPageProps> = ({
   onSelectOrder,
   onNewOrderForClient,
+  onSelectClient,
 }) => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedHistoryClientId, setSelectedHistoryClientId] = useState<string | null>(null);
+
+  const handleViewClient = (clientId: string) => {
+    if (onSelectClient) {
+      onSelectClient(clientId);
+    } else {
+      setSelectedHistoryClientId(clientId);
+    }
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [filterType, setFilterType] = useState<'ALL' | 'ACTIVE' | 'VIP'>('ALL');
@@ -418,7 +428,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
             <thead>
               <tr>
                 <th style={{ minWidth: 240 }}>Cliente</th>
-                <th style={{ minWidth: 170 }}>WhatsApp / Contato</th>
+                <th style={{ width: 100, textAlign: 'center' }}>WhatsApp</th>
                 <th style={{ minWidth: 200 }}>E-mail</th>
                 <th style={{ minWidth: 220 }}>Localização</th>
                 <th style={{ minWidth: 160 }}>Histórico & LTV</th>
@@ -438,8 +448,8 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                     <td>
                       <div
                         style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
-                        onClick={() => setSelectedHistoryClientId(client.id)}
-                        title="Clique para ver o histórico completo deste cliente"
+                        onClick={() => handleViewClient(client.id)}
+                        title="Clique para ver o perfil e histórico completo deste cliente"
                       >
                         <div
                           style={{
@@ -498,23 +508,29 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                       </div>
                     </td>
 
-                    {/* WhatsApp Direto */}
-                    <td>
+                    {/* WhatsApp Direto (Somente Ícone) */}
+                    <td style={{ textAlign: 'center' }}>
                       <button
                         onClick={() => handleOpenWhatsApp(client.phone)}
                         className="btn btn-whatsapp"
                         style={{
-                          padding: '5px 12px',
-                          fontSize: '0.78rem',
-                          fontWeight: 600,
-                          borderRadius: 7,
-                          gap: 6,
+                          width: 36,
+                          height: 36,
+                          padding: 0,
+                          borderRadius: 'var(--radius-md)',
                           display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto',
+                          boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)',
+                          cursor: client.phone ? 'pointer' : 'not-allowed',
+                          opacity: client.phone ? 1 : 0.4,
                         }}
-                        title="Iniciar conversa no WhatsApp Web"
+                        title={client.phone ? `Iniciar conversa no WhatsApp com ${client.name} (${client.phone})` : 'Sem telefone cadastrado'}
+                        disabled={!client.phone}
+                        aria-label={`Iniciar conversa no WhatsApp com ${client.name}`}
                       >
-                        <MessageCircle size={13} />
-                        <span>{client.phone}</span>
+                        <MessageCircle size={18} />
                       </button>
                     </td>
 
@@ -550,7 +566,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                     <td>
                       <div
                         style={{ cursor: 'pointer' }}
-                        onClick={() => setSelectedHistoryClientId(client.id)}
+                        onClick={() => handleViewClient(client.id)}
                         title="Ver histórico de compras e ordens de serviço"
                       >
                         <div className="mono" style={{ fontWeight: 800, color: 'var(--brand-primary)', fontSize: '0.94rem' }}>
@@ -590,7 +606,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
                         <button
-                          onClick={() => setSelectedHistoryClientId(client.id)}
+                          onClick={() => handleViewClient(client.id)}
                           className="btn btn-secondary btn-sm"
                           style={{
                             padding: '4px 9px',
@@ -696,8 +712,8 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                     <div
                       style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
-                      onClick={() => setSelectedHistoryClientId(client.id)}
-                      title="Ver histórico deste cliente"
+                      onClick={() => handleViewClient(client.id)}
+                      title="Ver perfil e histórico deste cliente"
                     >
                       <div
                         style={{
@@ -815,7 +831,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button
                       className="btn btn-secondary btn-sm"
-                      onClick={() => setSelectedHistoryClientId(client.id)}
+                      onClick={() => handleViewClient(client.id)}
                       style={{ fontSize: '0.74rem', padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                       title="Ver histórico de ordens de serviço"
                     >

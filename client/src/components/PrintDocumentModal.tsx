@@ -25,42 +25,144 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div 
         className="modal-content" 
-        style={{ maxWidth: mode === 'THERMAL' ? 420 : 800 }}
+        style={{ 
+          maxWidth: mode === 'THERMAL' ? 480 : 840,
+          width: '100%',
+          overflow: 'hidden',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.85)'
+        }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="modal-header no-print">
-          <div style={{ display: 'flex', gap: 8 }}>
+        <div 
+          className="modal-header no-print"
+          style={{
+            padding: '12px 18px',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface-elevated)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            flexWrap: 'nowrap'
+          }}
+        >
+          {/* Seletor Segmentado de Formato (OS A4 vs Cupom 80mm) */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: 'var(--bg-surface)',
+            padding: '3px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-card)',
+            gap: 3
+          }}>
             <button
-              className={`btn btn-sm ${mode === 'A4' ? 'btn-primary' : 'btn-secondary'}`}
+              type="button"
               onClick={() => setMode('A4')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                height: 34,
+                padding: '0 12px',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                borderRadius: 'calc(var(--radius-md) - 2px)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                background: mode === 'A4' ? 'var(--brand-primary)' : 'transparent',
+                color: mode === 'A4' ? '#ffffff' : 'var(--text-secondary)',
+                boxShadow: mode === 'A4' ? '0 2px 8px rgba(16, 185, 129, 0.35)' : 'none'
+              }}
             >
-              <FileText size={15} />
-              <span>Ordem de Serviço (A4)</span>
+              <FileText size={14} />
+              <span>OS (A4)</span>
             </button>
+
             <button
-              className={`btn btn-sm ${mode === 'THERMAL' ? 'btn-primary' : 'btn-secondary'}`}
+              type="button"
               onClick={() => setMode('THERMAL')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                height: 34,
+                padding: '0 12px',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                borderRadius: 'calc(var(--radius-md) - 2px)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                background: mode === 'THERMAL' ? 'var(--brand-primary)' : 'transparent',
+                color: mode === 'THERMAL' ? '#ffffff' : 'var(--text-secondary)',
+                boxShadow: mode === 'THERMAL' ? '0 2px 8px rgba(16, 185, 129, 0.35)' : 'none'
+              }}
             >
-              <Receipt size={15} />
-              <span>Cupom Térmico (80mm)</span>
+              <Receipt size={14} />
+              <span>Cupom 80mm</span>
             </button>
           </div>
 
+          {/* Ações: Imprimir Agora + Fechar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="btn btn-primary btn-sm" onClick={handlePrint}>
-              <Printer size={15} />
+            <button 
+              type="button"
+              className="btn btn-primary btn-sm" 
+              onClick={handlePrint}
+              style={{
+                height: 34,
+                padding: '0 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                gap: 6,
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              <Printer size={14} />
               <span>Imprimir Agora</span>
             </button>
+
             <button 
+              type="button"
               onClick={onClose}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 'var(--radius-md)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: '1px solid transparent',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                transition: 'all 0.18s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.background = 'var(--bg-surface)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--text-muted)';
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+              title="Fechar (Esc)"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
 
-        <div className="modal-body" style={{ background: '#fff', color: '#000', borderRadius: 8, padding: mode === 'THERMAL' ? 16 : 32 }}>
+        <div className="modal-body" style={{ background: mode === 'THERMAL' ? '#f1f5f9' : '#fff', color: '#000', borderRadius: '0 0 var(--radius-lg) var(--radius-lg)', padding: mode === 'THERMAL' ? '20px 16px' : 32, maxHeight: '82vh', overflowY: 'auto' }}>
           {mode === 'A4' ? (
             /* --- MODELO A4 ORDEM DE SERVIÇO --- */
             <div className="printable-document" style={{ fontFamily: 'var(--font-sans)', color: '#1a202c', fontSize: '0.9rem' }}>
@@ -174,7 +276,22 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({
             </div>
           ) : (
             /* --- MODELO 80MM CUPOM TÉRMICO --- */
-            <div className="printable-document thermal-receipt" style={{ fontFamily: 'monospace', color: '#000', fontSize: '10pt', lineHeight: 1.25 }}>
+            <div 
+              className="printable-document thermal-receipt" 
+              style={{ 
+                maxWidth: 360,
+                margin: '0 auto',
+                background: '#ffffff',
+                color: '#000000',
+                padding: '20px 20px 24px',
+                borderRadius: 8,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)',
+                border: '1px solid rgba(0, 0, 0, 0.06)',
+                fontFamily: 'monospace',
+                fontSize: '10pt',
+                lineHeight: 1.25
+              }}
+            >
               <div style={{ textAlign: 'center', borderBottom: '1px dashed #000', paddingBottom: 8, marginBottom: 8 }}>
                 <h3 style={{ fontSize: '12pt', fontWeight: 'bold' }}>PROJETO BAMBU</h3>
                 <div>ATELIER 3D / LASER / PINTURA</div>

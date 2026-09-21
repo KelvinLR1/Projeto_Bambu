@@ -64,6 +64,11 @@
   padding: 0;
 }
 
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
@@ -73,6 +78,7 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   position: relative;
+  scrollbar-gutter: stable;
   /* Ambient Mesh Lighting + Maker Grid */
   background-image: 
     radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.07) 0%, transparent 45%),
@@ -234,6 +240,62 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--brand-primary);
 }
 
+/* Light mode overrides for status pills */
+[data-theme-mode="light"] .status-ORCAMENTO {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.25);
+}
+[data-theme-mode="light"] .status-APROVADO {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+[data-theme-mode="light"] .status-EM_IMPRESSAO {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+[data-theme-mode="light"] .status-EM_PREPARACAO {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+[data-theme-mode="light"] .status-EM_PINTURA {
+  background: rgba(139, 92, 246, 0.1);
+  color: #6d28d9;
+  border-color: rgba(139, 92, 246, 0.25);
+}
+[data-theme-mode="light"] .status-SECAGEM_VERNIZ {
+  background: rgba(6, 182, 212, 0.1);
+  color: #0e7490;
+  border-color: rgba(6, 182, 212, 0.25);
+}
+[data-theme-mode="light"] .status-PRONTO {
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+[data-theme-mode="light"] .status-ENTREGUE {
+  background: rgba(71, 85, 105, 0.1);
+  color: #334155;
+  border-color: rgba(71, 85, 105, 0.25);
+}
+[data-theme-mode="light"] .status-CANCELADO {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-theme-mode="light"] .dashboard-row-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme-mode="light"] .dashboard-row-card.interactive:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+
 /* Luxury Interactive Buttons */
 .btn {
   display: inline-flex;
@@ -346,13 +408,55 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-textarea.form-control {
-  min-height: 80px;
-  resize: vertical;
+/* Padronização de Seletores (Select e Option) no Padrão do Sistema */
+select,
+select.form-control,
+.form-input select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 8px 34px 8px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-select.form-control {
-  cursor: pointer;
+select:hover,
+select.form-control:hover {
+  border-color: var(--border-highlight);
+}
+
+select:focus,
+select.form-control:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Listagem de opções das selectbox padrão */
+select option {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  padding: 10px 14px;
+}
+
+select option:checked {
+  background-color: var(--brand-primary);
+  color: #ffffff;
 }
 
 /* Status Badges */
@@ -476,7 +580,8 @@ select.form-control {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-  animation: fadeIn 0.15s ease-out;
+  animation: backdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, backdrop-filter;
 }
 
 .modal-content {
@@ -488,7 +593,8 @@ select.form-control {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
-  animation: scaleUp 0.18s ease-out;
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
 }
 
 .modal-header {
@@ -519,6 +625,30 @@ select.form-control {
 @keyframes scaleUp {
   from { transform: scale(0.96); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes backdropFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Kanban Board Styling */
@@ -560,15 +690,20 @@ select.form-control {
 }
 
 .kanban-header {
-  padding: 12px 14px;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  box-sizing: border-box;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .kanban-body {
@@ -578,9 +713,25 @@ select.form-control {
   gap: 10px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
+}
+
+.kanban-body::-webkit-scrollbar {
+  width: 5px;
+}
+.kanban-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.kanban-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+}
+.kanban-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .kanban-card {
+  flex-shrink: 0;
   background: rgba(16, 24, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-md);
@@ -949,6 +1100,26 @@ select.form-control {
   letter-spacing: 0.03em;
 }
 
+/* Dashboard List Cards & Rows */
+.dashboard-row-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-row-card.interactive {
+  cursor: pointer;
+}
+
+.dashboard-row-card.interactive:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-highlight);
+  transform: translateY(-1px);
+}
+
+
 /* Print Styling for 80mm receipt & A4 OS */
 @media print {
   body {
@@ -1003,6 +1174,7 @@ select.form-control {
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), padding 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Standardized page container — used by all pages */
@@ -1011,6 +1183,7 @@ select.form-control {
   flex: 1;
   padding: 24px 28px 40px;
   box-sizing: border-box;
+  transition: padding 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (max-width: 768px) {
@@ -1023,5 +1196,213 @@ select.form-control {
     height: auto !important;
     position: relative !important;
   }
+  .sidebar-spacer {
+    display: none !important;
+  }
 }
+
+/* ==========================================================================
+   SISTEMA DE ANIMAÇÕES & TRANSIÇÕES SUAVES (PREMIUM EXPERIENCE)
+   ========================================================================== */
+
+/* 1. Transição Suave de Telas / Páginas (Screen Transitions) */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.996);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-transition-wrapper {
+  animation: pageEnter 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  will-change: opacity, transform;
+}
+
+/* 2. Transição Suave de Troca de Abas / Opções (Tab & Option Content) */
+@keyframes tabPaneEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-pane-animated,
+.tab-content-animated {
+  animation: tabPaneEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+/* 3. Micro-interações táteis em Botões e Filtros */
+.btn,
+.filter-chip,
+.tab-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:active:not(:disabled),
+.filter-chip:active,
+.tab-btn:active {
+  transform: scale(0.98);
+}
+
+/* 4. Suavidade em Focus e Hover de Inputs e Seletores */
+.form-control,
+select.form-control,
+input[type="text"],
+input[type="number"],
+textarea.form-control {
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 5. Suavidade em Controles Deslizantes (Range Slider) */
+input[type="range"] {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+input[type="range"]:active {
+  filter: brightness(1.15);
+}
+
+/* 6. Suavidade de Cards e Linhas de Tabelas */
+.glass-panel,
+.dashboard-row-card {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.data-table tbody tr {
+  transition: background-color 0.18s ease, transform 0.15s ease;
+}
+.data-table tbody tr:hover {
+  transform: translateY(-1px);
+}
+
+/* 8. Tooltips do Sistema (Design Premium Glassmorphism) */
+@keyframes tooltipPopTop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% + 5px)) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes tooltipPopBottom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -5px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+[data-theme-mode="light"] .custom-system-tooltip {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme-mode="light"] .custom-system-tooltip > div {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 9. Menus Suspensos e Selectbox Customizadas */
+@keyframes customSelectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.custom-select-menu::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-select-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-select-menu::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: var(--radius-full);
+}
+
+.custom-select-container:focus-visible {
+  outline: none;
+}
+.custom-select-container:focus-visible .custom-select-trigger {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+/* Light Mode Overrides for Select e CustomSelect */
+[data-theme-mode="light"] select,
+[data-theme-mode="light"] select.form-control,
+[data-theme-mode="light"] .form-input select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.14);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-theme-mode="light"] select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme-mode="light"] .custom-select-menu {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme-mode="light"] .custom-select-trigger {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  color: #0f172a !important;
+}
+
+[data-theme-mode="light"] .custom-select-option:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Layout de Tela do Pedido (OrderDetailPage) */
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .order-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 

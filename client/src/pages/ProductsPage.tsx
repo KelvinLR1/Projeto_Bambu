@@ -5,11 +5,12 @@ import { formatCurrency, PROCESS_MAP } from '../utils/formatters';
 import {
   Search, Plus, Edit3, Trash2, Clock, Weight, Sparkles,
   DollarSign, TrendingUp, X, Package, Zap, Image as ImageIcon,
-  Upload, ArrowLeft, Copy, CheckCircle2, Save, RefreshCw
+  Upload, ArrowLeft, Copy, CheckCircle2, Save, RefreshCw, Calculator
 } from 'lucide-react';
 
 interface ProductsPageProps {
   onGenerateOrderFromProduct?: (product: Product) => void;
+  onOpenInCalculator?: (product: Product) => void;
 }
 
 const EditorSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -26,9 +27,15 @@ const FieldGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ la
   </div>
 );
 
-interface ProductCardProps { product: Product; onEdit: () => void; onDelete: () => void; onOrder?: () => void; }
+interface ProductCardProps {
+  product: Product;
+  onEdit: () => void;
+  onDelete: () => void;
+  onOrder?: () => void;
+  onCalculate?: () => void;
+}
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onOrder }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onOrder, onCalculate }) => {
   const [hovered, setHovered] = useState(false);
   const meta = PROCESS_MAP[product.process_type] || { label: product.process_type, icon: '📦' };
   return (
@@ -44,6 +51,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
           <span>{meta.icon}</span> {meta.label}
         </div>
         <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 6, opacity: hovered ? 1 : 0, transition: 'opacity 0.2s' }}>
+          {onCalculate && <button onClick={e => { e.stopPropagation(); onCalculate(); }} style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Simular na Calculadora"><Calculator size={13} /></button>}
           {onOrder && <button onClick={e => { e.stopPropagation(); onOrder(); }} style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Emitir Pedido"><Zap size={13} /></button>}
           <button onClick={e => { e.stopPropagation(); onDelete(); }} style={{ background: 'rgba(239,68,68,0.75)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Remover"><Trash2 size={13} /></button>
         </div>
@@ -65,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
   );
 };
 
-export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromProduct }) => {
+export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromProduct, onOpenInCalculator }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [] });
   const [equipments, setEquipments] = useState<Equipment[]>([]);
@@ -212,44 +220,94 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
 
   if (viewMode === 'editor') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
+      <>
         {savedToast && (
           <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 9999, background: 'var(--brand-primary)', color: '#fff', padding: '12px 20px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 32px var(--brand-primary-glow)', fontWeight: 600, fontSize: '0.9rem' }}>
             <CheckCircle2 size={18} /> Salvo com sucesso!
           </div>
         )}
-
-        <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'var(--bg-surface)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border-subtle)', padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button onClick={() => setViewMode('list')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500 }}>
-              <ArrowLeft size={15} /> Catálogo
+      <div className="page-container">
+        {/* Header: breadcrumb + actions */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 16,
+          marginBottom: 24,
+          paddingBottom: 16,
+          borderBottom: '1px solid var(--border-subtle)',
+        }}>
+          {/* Left: back + title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <button
+              onClick={() => setViewMode('list')}
+              className="btn btn-secondary"
+              style={{ padding: '8px 14px', fontSize: '0.84rem' }}
+              title="Voltar ao catálogo"
+            >
+              <ArrowLeft size={16} />
+              <span>Catálogo</span>
             </button>
-            <span style={{ color: 'var(--border-subtle)', fontSize: '1.2rem' }}>/</span>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.9rem' }}>{editingProduct ? formData.name || 'Editar Peça' : 'Nova Peça'}</span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                fontSize: '1.2rem',
+                fontWeight: 900,
+                color: 'var(--text-primary)',
+              }}>
+                {editingProduct ? formData.name || 'Editar Peça' : 'Nova Peça'}
+              </span>
+              {formData.sku && (
+                <span className="mono" style={{
+                  fontSize: '0.82rem',
+                  color: 'var(--text-muted)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '2px 8px',
+                  borderRadius: 5,
+                }}>
+                  {formData.sku}
+                </span>
+              )}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+
+          {/* Right: action buttons */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {editingProduct && (
               <>
-                <button onClick={handleDuplicate} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
-                  <Copy size={14} /> Duplicar
+                <button onClick={handleDuplicate} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.84rem' }}>
+                  <Copy size={15} />
+                  <span>Duplicar</span>
                 </button>
-                {onGenerateOrderFromProduct && (
-                  <button onClick={() => onGenerateOrderFromProduct({ ...editingProduct, ...formData })} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
-                    <Zap size={14} /> Emitir Pedido
+                {onOpenInCalculator && (
+                  <button onClick={() => onOpenInCalculator({ ...editingProduct, ...formData })} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.84rem' }} title="Abrir na calculadora">
+                    <Calculator size={15} color="var(--brand-primary)" />
+                    <span>Simular Custos</span>
                   </button>
                 )}
-                <button onClick={() => handleDelete(editingProduct.id, editingProduct.name)} style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.83rem' }}>
-                  <Trash2 size={14} /> Remover
+                {onGenerateOrderFromProduct && (
+                  <button onClick={() => onGenerateOrderFromProduct({ ...editingProduct, ...formData })} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.84rem' }}>
+                    <Zap size={15} />
+                    <span>Emitir Pedido</span>
+                  </button>
+                )}
+                <button onClick={() => handleDelete(editingProduct.id, editingProduct.name)} className="btn btn-danger" style={{ padding: '8px 14px', fontSize: '0.84rem' }}>
+                  <Trash2 size={15} />
+                  <span>Remover</span>
                 </button>
               </>
             )}
-            <button onClick={() => handleSave()} style={{ background: 'var(--brand-primary)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.88rem', fontWeight: 700 }}>
-              <Save size={15} /> Salvar Ficha
+            <button onClick={() => handleSave()} className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '0.88rem', fontWeight: 700 }}>
+              <Save size={15} />
+              <span>Salvar Ficha</span>
             </button>
           </div>
         </div>
 
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32 }}>
+        {/* Content Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 28 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
             <EditorSection title="Identificação">
@@ -401,6 +459,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -422,11 +481,30 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome ou SKU..." className="form-input" style={{ ...iSt, paddingLeft: 40 }} />
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {processFilters.map(f => (
-            <button key={f.key} onClick={() => setSelectedProcess(f.key)} style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', border: selectedProcess === f.key ? '1px solid var(--brand-primary)' : '1px solid var(--border-subtle)', background: selectedProcess === f.key ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)', color: selectedProcess === f.key ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
-              {f.label}
-            </button>
-          ))}
+          {processFilters.map(f => {
+            const isSel = selectedProcess === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setSelectedProcess(f.key)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  border: isSel ? '1px solid var(--brand-primary)' : '1px solid var(--border-subtle)',
+                  background: isSel ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)',
+                  color: isSel ? 'var(--brand-primary)' : 'var(--text-muted)',
+                  transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transform: isSel ? 'scale(1.03)' : 'scale(1)',
+                  boxShadow: isSel ? '0 3px 12px var(--brand-primary-glow)' : 'none',
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -442,9 +520,16 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
           <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>Tente outro filtro ou cadastre uma nova peça</div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+        <div key={selectedProcess} className="tab-pane-animated" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
           {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} onEdit={() => handleOpenEditor(product)} onDelete={() => handleDelete(product.id, product.name)} onOrder={onGenerateOrderFromProduct ? () => onGenerateOrderFromProduct(product) : undefined} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onEdit={() => handleOpenEditor(product)}
+              onDelete={() => handleDelete(product.id, product.name)}
+              onOrder={onGenerateOrderFromProduct ? () => onGenerateOrderFromProduct(product) : undefined}
+              onCalculate={onOpenInCalculator ? () => onOpenInCalculator(product) : undefined}
+            />
           ))}
         </div>
       )}

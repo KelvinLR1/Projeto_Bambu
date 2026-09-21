@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Order, OrderStatus } from '../types';
 import { formatCurrency, formatDate, STATUS_MAP } from '../utils/formatters';
+import { CustomSelect } from '../components/CustomSelect';
 import { Search, Filter, Eye, MessageCircle, FileText, Calendar } from 'lucide-react';
 
 interface OrdersPageProps {
@@ -75,18 +76,23 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
             />
           </div>
 
-          {/* Filter Status */}
-          <select
-            className="form-control"
+          {/* Filter Status no Padrão do Sistema */}
+          <CustomSelect
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            style={{ width: 'auto', padding: '8px 14px', fontSize: '0.85rem' }}
-          >
-            <option value="ALL">Todos os Status ({orders.length})</option>
-            {Object.entries(STATUS_MAP).map(([key, item]) => (
-              <option key={key} value={key}>{item.label}</option>
-            ))}
-          </select>
+            onChange={val => setStatusFilter(val)}
+            options={[
+              { value: 'ALL', label: `Todos os Status (${orders.length})` },
+              ...Object.entries(STATUS_MAP).map(([key, item]) => ({
+                value: key,
+                label: item.label,
+                color: item.color,
+                badge: String(orders.filter(o => o.status === key).length),
+              })),
+            ]}
+            ariaLabel="Filtrar por Status"
+            style={{ minWidth: 200 }}
+            menuStyle={{ minWidth: 230 }}
+          />
         </div>
       </div>
 
