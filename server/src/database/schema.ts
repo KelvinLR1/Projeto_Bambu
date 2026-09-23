@@ -197,6 +197,37 @@ export function initSchema() {
       FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
     );
 
+    -- Imagens dos Produtos do Catálogo
+    CREATE TABLE IF NOT EXISTS product_images (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      image_url TEXT NOT NULL,
+      title TEXT,
+      is_cover INTEGER DEFAULT 0,
+      display_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now', 'localtime')),
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+
+    -- Arquivos e Peças/Componentes que compõem o Modelo 3D
+    CREATE TABLE IF NOT EXISTS product_files (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      file_url TEXT NOT NULL,
+      file_size INTEGER DEFAULT 0,
+      file_type TEXT,
+      image_url TEXT,
+      quantity INTEGER DEFAULT 1,
+      weight_g REAL DEFAULT 0,
+      print_time_hours REAL DEFAULT 0,
+      notes TEXT,
+      display_order INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now', 'localtime')),
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+
     -- Configurações Gerais do Atelier
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -210,5 +241,39 @@ export function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_date ON financial_transactions(transaction_date);
     CREATE INDEX IF NOT EXISTS idx_transactions_type ON financial_transactions(type);
+    CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id);
+    CREATE INDEX IF NOT EXISTS idx_product_files_product_id ON product_files(product_id);
   `);
+
+  // Migração segura para colunas de peso e tempo nas sub-peças
+  try {
+    db.prepare(`ALTER TABLE product_files ADD COLUMN weight_g REAL DEFAULT 0`).run();
+  } catch (e) {}
+  try {
+    db.prepare(`ALTER TABLE product_files ADD COLUMN print_time_hours REAL DEFAULT 0`).run();
+  } catch (e) {}
+
+  // Migração automática de imagens existentes na tabela products para product_images
+  try {
+    const productsWithImages = db.prepare(`
+      SELECT p.id, p.image_url, p.name 
+      FROM products p 
+      WHERE p.image_url IS NOT NULL 
+        AND trim(p.image_url) != '' 
+        AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.product_id = p.id)
+    `).all() as { id: string; image_url: string; name: string }[];
+
+    if (productsWithImages && productsWithImages.length > 0) {
+      const insertImg = db.prepare(`
+        INSERT INTO product_images (id, product_id, image_url, title, is_cover, display_order)
+        VALUES (?, ?, ?, ?, 1, 0)
+      `);
+      for (const prod of productsWithImages) {
+        insertImg.run(`img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, prod.id, prod.image_url, prod.name);
+      }
+    }
+  } catch (err) {
+    console.error('Erro na migração de product_images:', err);
+  }
 }
+

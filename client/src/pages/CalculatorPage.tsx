@@ -19,9 +19,14 @@ import {
   AlertCircle,
   TrendingUp,
   DollarSign,
-  Percent
+  Percent,
+  Layers,
+  CheckSquare,
+  Square,
+  FileCode,
+  Check
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, ProductFile } from '../types';
 
 interface ProfitMarginControlProps {
   marginPercent: number;
@@ -358,6 +363,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Sub-peças do Projeto Selecionado
+  const [projectParts, setProjectParts] = useState<ProductFile[]>([]);
+  const [selectedPartIds, setSelectedPartIds] = useState<Set<string>>(new Set());
+  const [loadingParts, setLoadingParts] = useState(false);
+
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
@@ -532,7 +542,126 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       category: prod.category || 'Geral',
     });
 
+    // Carregar arquivos e sub-peças do projeto
+    setLoadingParts(true);
+    api.getProductFiles(prod.id)
+      .then(files => {
+        setProjectParts(files);
+        setSelectedPartIds(new Set(files.map(f => f.id)));
+      })
+      .catch(err => {
+        console.warn('Erro ao carregar sub-peças do projeto:', err);
+        setProjectParts([]);
+        setSelectedPartIds(new Set());
+      })
+      .finally(() => {
+        setLoadingParts(false);
+      });
+
     showToast(`Projeto "${prod.name}" carregado na calculadora!`, 'success');
+  };
+
+  const applySelectedPartsToCalculator = (
+    parts: ProductFile[],
+    selectedIds: Set<string>,
+    prod: Product | null,
+    targetTab: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA'
+  ) => {
+    if (!prod || parts.length === 0) return;
+
+    const selectedParts = parts.filter(p => selectedIds.has(p.id));
+
+    if (selectedParts.length === 0) {
+      if (targetTab === 'FDM') {
+        setFdmWeightG(0);
+        setFdmHours(0);
+      } else if (targetTab === 'RESIN') {
+        setResinVolumeMl(0);
+        setResinHours(0);
+      }
+      return;
+    }
+
+    // Se todas as peças estão selecionadas e o produto possui valores padrão:
+    if (selectedParts.length === parts.length) {
+      const hasExplicitWeights = parts.some(p => (Number(p.weight_g) || 0) > 0);
+      const hasExplicitHours = parts.some(p => (Number(p.print_time_hours) || 0) > 0);
+
+      const weight = hasExplicitWeights
+        ? selectedParts.reduce((acc, p) => acc + (Number(p.weight_g) || 0) * (Number(p.quantity) || 1), 0)
+        : (Number(prod.weight_g) || 100);
+
+      const hours = hasExplicitHours
+        ? Number(selectedParts.reduce((acc, p) => acc + (Number(p.print_time_hours) || 0) * (Number(p.quantity) || 1), 0).toFixed(1))
+        : (Number(prod.production_time_hours) || 4);
+
+      if (targetTab === 'FDM') {
+        setFdmWeightG(weight);
+        setFdmHours(Math.max(0.1, hours));
+      } else if (targetTab === 'RESIN') {
+        setResinVolumeMl(weight);
+        setResinHours(Math.max(0.1, hours));
+      }
+      return;
+    }
+
+    // Seleção parcial de sub-peças:
+    const hasExplicitWeights = parts.some(p => (Number(p.weight_g) || 0) > 0);
+    const hasExplicitHours = parts.some(p => (Number(p.print_time_hours) || 0) > 0);
+
+    let calculatedWeight = 0;
+    let calculatedHours = 0;
+
+    if (hasExplicitWeights) {
+      calculatedWeight = selectedParts.reduce((acc, p) => acc + (Number(p.weight_g) || 0) * (Number(p.quantity) || 1), 0);
+    } else {
+      const totalPieces = parts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+      const selectedPieces = selectedParts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+      const ratio = totalPieces > 0 ? selectedPieces / totalPieces : 1;
+      calculatedWeight = Math.round((Number(prod.weight_g) || 100) * ratio);
+    }
+
+    if (hasExplicitHours) {
+      calculatedHours = Number(selectedParts.reduce((acc, p) => acc + (Number(p.print_time_hours) || 0) * (Number(p.quantity) || 1), 0).toFixed(1));
+    } else {
+      const totalPieces = parts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+      const selectedPieces = selectedParts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+      const ratio = totalPieces > 0 ? selectedPieces / totalPieces : 1;
+      calculatedHours = Number(((Number(prod.production_time_hours) || 4) * ratio).toFixed(1));
+    }
+
+    if (targetTab === 'FDM') {
+      setFdmWeightG(calculatedWeight);
+      setFdmHours(Math.max(0.1, calculatedHours));
+    } else if (targetTab === 'RESIN') {
+      setResinVolumeMl(calculatedWeight);
+      setResinHours(Math.max(0.1, calculatedHours));
+    }
+  };
+
+  const handleTogglePart = (partId: string) => {
+    setSelectedPartIds(prev => {
+      const next = new Set(prev);
+      if (next.has(partId)) {
+        next.delete(partId);
+      } else {
+        next.add(partId);
+      }
+      applySelectedPartsToCalculator(projectParts, next, selectedProduct, activeTab);
+      return next;
+    });
+  };
+
+  const handleSelectAllParts = () => {
+    const next = new Set(projectParts.map(p => p.id));
+    setSelectedPartIds(next);
+    applySelectedPartsToCalculator(projectParts, next, selectedProduct, activeTab);
+  };
+
+  const handleDeselectAllParts = () => {
+    const next = new Set<string>();
+    setSelectedPartIds(next);
+    applySelectedPartsToCalculator(projectParts, next, selectedProduct, activeTab);
   };
 
   const handleSelectProduct = (productId: string) => {
@@ -548,6 +677,8 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
 
   const handleClearProject = () => {
     setSelectedProduct(null);
+    setProjectParts([]);
+    setSelectedPartIds(new Set());
     setSaveAsForm({
       name: 'Novo Projeto',
       sku: '',
@@ -856,58 +987,87 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const handleConvertToOrder = () => {
     let item: any = null;
 
+    const selectedPartsList = projectParts.filter(p => selectedPartIds.has(p.id));
+    const isPartialAssembly = projectParts.length > 0 && selectedPartsList.length < projectParts.length;
+    const partsSummaryText = projectParts.length > 0
+      ? isPartialAssembly
+        ? ` [${selectedPartsList.length}/${projectParts.length} sub-peças: ${selectedPartsList.map(p => `${p.name} (${p.quantity}x)`).join(', ')}]`
+        : ` [Projeto Completo: ${projectParts.length} sub-peças]`
+      : '';
+
     if (activeTab === 'FDM' && fdmResult) {
       const mat = materials.fdm.find((m: any) => m.id === fdmMaterialId);
       const title = selectedProduct ? selectedProduct.name : `Impressão FDM: ${mat?.name || 'Filamento'}`;
       item = {
         process_type: 'FDM',
-        description: `${title} (${fdmWeightG}g, ${fdmHours}h)`,
+        description: `${title}${partsSummaryText} (${fdmWeightG}g, ${fdmHours}h)`,
         quantity: 1,
         material_id: fdmMaterialId,
         equipment_id: fdmEquipId,
         unit_cost: fdmResult.totalCost,
         unit_price: fdmResult.suggestedPrice,
         product_id: selectedProduct?.id || null,
-        calc_params: { weight_g: fdmWeightG, hours: fdmHours, ...fdmResult },
+        calc_params: {
+          weight_g: fdmWeightG,
+          hours: fdmHours,
+          selected_parts: selectedPartsList,
+          is_partial: isPartialAssembly,
+          ...fdmResult,
+        },
       };
     } else if (activeTab === 'RESIN' && resinResult) {
       const mat = materials.resin.find((m: any) => m.id === resinMaterialId);
       const title = selectedProduct ? selectedProduct.name : `Impressão Resina: ${mat?.name || 'Resina'}`;
       item = {
         process_type: 'RESIN',
-        description: `${title} (${resinVolumeMl}ml, ${resinHours}h)`,
+        description: `${title}${partsSummaryText} (${resinVolumeMl}ml, ${resinHours}h)`,
         quantity: 1,
         material_id: resinMaterialId,
         equipment_id: resinEquipId,
         unit_cost: resinResult.totalCost,
         unit_price: resinResult.suggestedPrice,
         product_id: selectedProduct?.id || null,
-        calc_params: { volume_ml: resinVolumeMl, hours: resinHours, ...resinResult },
+        calc_params: {
+          volume_ml: resinVolumeMl,
+          hours: resinHours,
+          selected_parts: selectedPartsList,
+          is_partial: isPartialAssembly,
+          ...resinResult,
+        },
       };
     } else if (activeTab === 'LASER' && laserResult) {
       const mat = materials.laser.find((m: any) => m.id === laserMaterialId);
       const title = selectedProduct ? selectedProduct.name : `Corte/Impressão Laser: ${mat?.name || 'Papel'}`;
       item = {
         process_type: 'LASER',
-        description: `${title} (${laserSheets} folhas)`,
+        description: `${title}${partsSummaryText} (${laserSheets} folhas)`,
         quantity: 1,
         material_id: laserMaterialId,
         unit_cost: laserResult.totalCost,
         unit_price: laserResult.suggestedPrice,
         product_id: selectedProduct?.id || null,
-        calc_params: { sheets: laserSheets, ...laserResult },
+        calc_params: {
+          sheets: laserSheets,
+          selected_parts: selectedPartsList,
+          is_partial: isPartialAssembly,
+          ...laserResult,
+        },
       };
     } else if (activeTab === 'PINTURA' && paintResult) {
       const title = selectedProduct ? selectedProduct.name : `Pós-Processamento e Pintura Porte ${paintSize}`;
       item = {
         process_type: 'PINTURA',
-        description: `${title} (Prep: ${paintPrepHours}h, Pintura: ${paintPaintHours}h, Verniz ${paintVarnish})`,
+        description: `${title}${partsSummaryText} (Prep: ${paintPrepHours}h, Pintura: ${paintPaintHours}h, Verniz ${paintVarnish})`,
         quantity: 1,
         material_id: null,
         unit_cost: paintResult.totalCost,
         unit_price: paintResult.suggestedPrice,
         product_id: selectedProduct?.id || null,
-        calc_params: { ...paintResult },
+        calc_params: {
+          selected_parts: selectedPartsList,
+          is_partial: isPartialAssembly,
+          ...paintResult,
+        },
       };
     }
 
@@ -1072,7 +1232,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
             border: '1px solid color-mix(in srgb, var(--brand-primary) 24%, transparent)',
             borderRadius: 10,
             padding: '10px 16px',
-            marginBottom: 20,
+            marginBottom: projectParts.length > 0 ? 14 : 20,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -1095,6 +1255,313 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           </div>
           <div style={{ color: 'var(--text-secondary)' }}>
             Preço cadastrado: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(selectedProduct.unit_price)}</strong> ({selectedProduct.margin_percent}% margem)
+          </div>
+        </div>
+      )}
+
+      {/* 3.1. Painel Interativo de Sub-peças do Projeto */}
+      {selectedProduct && projectParts.length > 0 && (
+        <div
+          className="glass-panel"
+          style={{
+            padding: '16px 20px',
+            marginBottom: 24,
+            border: selectedPartIds.size < projectParts.length
+              ? '1px solid rgba(245, 158, 11, 0.45)'
+              : '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
+            background: selectedPartIds.size < projectParts.length
+              ? 'color-mix(in srgb, #f59e0b 5%, var(--bg-surface))'
+              : 'var(--bg-surface-elevated, var(--bg-surface))',
+            borderRadius: 'var(--radius-lg, 14px)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          }}
+        >
+          {/* Header da Barra de Sub-peças */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  background: selectedPartIds.size < projectParts.length
+                    ? 'rgba(245, 158, 11, 0.18)'
+                    : 'color-mix(in srgb, var(--brand-primary) 18%, transparent)',
+                  color: selectedPartIds.size < projectParts.length ? '#f59e0b' : 'var(--brand-primary)',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                }}
+              >
+                <Layers size={18} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Sub-peças do Projeto ({selectedPartIds.size} de {projectParts.length} selecionadas)
+                  </h4>
+                  {selectedPartIds.size === projectParts.length ? (
+                    <span
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        color: '#10b981',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      MONTAGEM COMPLETA
+                    </span>
+                  ) : selectedPartIds.size > 0 ? (
+                    <span
+                      style={{
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        color: '#f59e0b',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      PRODUÇÃO PARCIAL
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      NENHUMA PEÇA MARCADA
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                  Marque ou desmarque as partes que compõem este modelo. O peso, tempo e custos são recalculados automaticamente na simulação.
+                </div>
+              </div>
+            </div>
+
+            {/* Ações de Seleção Rápida */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleSelectAllParts}
+                style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+                title="Marcar todas as sub-peças"
+              >
+                <CheckSquare size={14} color="var(--brand-primary)" />
+                <span>Selecionar Todas</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleDeselectAllParts}
+                style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+                title="Desmarcar todas as sub-peças"
+              >
+                <Square size={14} color="var(--text-muted)" />
+                <span>Desmarcar Todas</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Grid de Sub-peças com Cards Clicáveis */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: 10,
+            }}
+          >
+            {projectParts.map(part => {
+              const isSelected = selectedPartIds.has(part.id);
+              return (
+                <div
+                  key={part.id}
+                  onClick={() => handleTogglePart(part.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    border: isSelected
+                      ? '1px solid var(--brand-primary)'
+                      : '1px dashed var(--border-subtle)',
+                    background: isSelected
+                      ? 'color-mix(in srgb, var(--brand-primary) 10%, var(--bg-surface))'
+                      : 'rgba(255,255,255,0.02)',
+                    transition: 'all 0.18s ease',
+                    opacity: isSelected ? 1 : 0.6,
+                    transform: isSelected ? 'scale(1.01)' : 'scale(1)',
+                    boxShadow: isSelected ? '0 2px 8px var(--brand-primary-glow)' : 'none',
+                  }}
+                >
+                  {/* Checkbox visual interativo */}
+                  <div
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 6,
+                      border: isSelected ? '2px solid var(--brand-primary)' : '2px solid var(--text-muted)',
+                      background: isSelected ? 'var(--brand-primary)' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      color: '#fff',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {isSelected && <Check size={14} strokeWidth={3} />}
+                  </div>
+
+                  {/* Foto individual ou ícone da sub-peça */}
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {part.image_url ? (
+                      <img
+                        src={part.image_url}
+                        alt={part.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <FileCode size={20} color={isSelected ? 'var(--brand-primary)' : 'var(--text-muted)'} />
+                    )}
+                  </div>
+
+                  {/* Dados e Badges da sub-peça */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: '0.86rem',
+                        fontWeight: 700,
+                        color: isSelected ? 'var(--text-primary)' : 'var(--text-muted)',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={part.name}
+                    >
+                      {part.name}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                      <span
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.15)',
+                          color: '#3b82f6',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          borderRadius: 4,
+                          padding: '1px 5px',
+                          fontSize: '0.68rem',
+                          fontWeight: 800,
+                        }}
+                      >
+                        {part.quantity || 1}x
+                      </span>
+
+                      <span
+                        style={{
+                          background: 'rgba(255,255,255,0.06)',
+                          color: 'var(--text-muted)',
+                          borderRadius: 4,
+                          padding: '1px 5px',
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {part.file_type || '3D'}
+                      </span>
+
+                      {part.weight_g ? (
+                        <span
+                          style={{
+                            background: 'rgba(16, 185, 129, 0.12)',
+                            color: '#10b981',
+                            borderRadius: 4,
+                            padding: '1px 5px',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                          }}
+                          title={`Peso unitário: ${part.weight_g}g`}
+                        >
+                          ⚖️ {part.weight_g}g
+                        </span>
+                      ) : null}
+
+                      {part.print_time_hours ? (
+                        <span
+                          style={{
+                            background: 'rgba(245, 158, 11, 0.12)',
+                            color: '#f59e0b',
+                            borderRadius: 4,
+                            padding: '1px 5px',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                          }}
+                          title={`Tempo estimado: ${part.print_time_hours}h`}
+                        >
+                          ⏱️ {part.print_time_hours}h
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Rodapé informativo de cálculo do sub-conjunto */}
+          <div
+            style={{
+              marginTop: 14,
+              paddingTop: 10,
+              borderTop: '1px dashed var(--border-subtle)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 8,
+              fontSize: '0.78rem',
+            }}
+          >
+            <div style={{ color: selectedPartIds.size < projectParts.length ? '#f59e0b' : 'var(--text-secondary)' }}>
+              {selectedPartIds.size < projectParts.length ? (
+                <span>⚠️ <strong>Projeto parcial ativo:</strong> Custos, consumo de filamento/resina e tempo de máquina recalculados exclusivamente para as {selectedPartIds.size} sub-peças ativas.</span>
+              ) : (
+                <span>✅ <strong>Montagem completa:</strong> Todas as {projectParts.length} sub-peças do modelo estão incluídas no cálculo de custos e precificação.</span>
+              )}
+            </div>
+
+            <div className="mono" style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.82rem' }}>
+              {activeTab === 'FDM' ? `Consumo: ${fdmWeightG}g • Tempo: ${fdmHours}h` : activeTab === 'RESIN' ? `Volume: ${resinVolumeMl}ml • Tempo: ${resinHours}h` : ''}
+            </div>
           </div>
         </div>
       )}

@@ -16,10 +16,11 @@ dist/
 client/dist/
 server/dist/
 
-# SQLite Databases (keep data folder, ignore local DB binaries)
+# SQLite Databases and uploads (keep data folder)
 data/*.db
 data/*.db-wal
 data/*.db-shm
+data/uploads/
 !data/.gitkeep
 
 # Environment variables

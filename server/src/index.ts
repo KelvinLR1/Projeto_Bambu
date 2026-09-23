@@ -14,7 +14,26 @@ import settingsRouter from './routes/settings.js';
 import whatsappRouter from './routes/whatsapp.js';
 import productsRouter from './routes/products.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.resolve(__dirname, '../../data/uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+const productUploadsDir = path.join(uploadsDir, 'products');
+if (!fs.existsSync(productUploadsDir)) {
+  fs.mkdirSync(productUploadsDir, { recursive: true });
+}
+const filesUploadsDir = path.join(uploadsDir, 'files');
+if (!fs.existsSync(filesUploadsDir)) {
+  fs.mkdirSync(filesUploadsDir, { recursive: true });
+}
 
 // Ensure DB schema initialized
 initSchema();
@@ -23,7 +42,11 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Servir arquivos de uploads estáticos
+app.use('/uploads', express.static(uploadsDir));
 
 // API Routes
 app.use('/api/clients', clientsRouter);

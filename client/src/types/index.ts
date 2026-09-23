@@ -212,6 +212,33 @@ export interface StockAlert {
   percentageLeft: number;
 }
 
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  title?: string | null;
+  is_cover: number | boolean;
+  display_order?: number;
+  created_at: string;
+}
+
+export interface ProductFile {
+  id: string;
+  product_id: string;
+  name: string;
+  filename: string;
+  file_url: string;
+  file_size?: number;
+  file_type?: string;
+  image_url?: string | null;
+  quantity: number;
+  weight_g?: number;
+  print_time_hours?: number;
+  notes?: string | null;
+  display_order?: number;
+  created_at: string;
+}
+
 export interface Product {
   id: string;
   sku: string;
@@ -227,8 +254,13 @@ export interface Product {
   unit_price: number;
   margin_percent: number;
   image_url?: string;
+  images_count?: number;
+  images?: ProductImage[];
+  files_count?: number;
+  files?: ProductFile[];
   active: number;
   calc_params_json?: string;
   created_at: string;
 }
+
 

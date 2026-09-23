@@ -1048,7 +1048,139 @@ export function runSeed() {
   `);
   products.forEach(p => insertProduct.run(p));
 
-  console.log('Database seeded successfully with products catalog!');
+  // Seed de Fotos de Capa
+  const insertProductImage = db.prepare(`
+    INSERT INTO product_images (id, product_id, image_url, title, is_cover, display_order)
+    VALUES (?, ?, ?, ?, 1, 0)
+  `);
+  products.forEach(p => {
+    if (p.image_url) {
+      insertProductImage.run(`img_${uuidv4().replace(/-/g, '').substring(0, 16)}`, p.id, p.image_url, p.name);
+    }
+  });
+
+  // Seed de Peças/Arquivos Componentes
+  const insertProductFile = db.prepare(`
+    INSERT INTO product_files (id, product_id, name, filename, file_url, file_size, file_type, image_url, quantity, weight_g, print_time_hours, notes, display_order)
+    VALUES (@id, @product_id, @name, @filename, @file_url, @file_size, @file_type, @image_url, @quantity, @weight_g, @print_time_hours, @notes, @display_order)
+  `);
+
+  // Sub-peças do Capacete Mandalorian (products[5])
+  const mandoParts = [
+    {
+      id: uuidv4(),
+      product_id: products[5].id,
+      name: 'Casco Principal / Domo Superior',
+      filename: 'mando_helmet_dome_1to1.stl',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 19450000,
+      file_type: 'STL',
+      image_url: 'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=400&q=80',
+      quantity: 1,
+      weight_g: 480,
+      print_time_hours: 16.0,
+      notes: '3 paredes perimetrais, infill 15% giroide, sem suporte na cúpula. Fatiar no Bambu Studio com perfil 0.20mm Standard.',
+      display_order: 1
+    },
+    {
+      id: uuidv4(),
+      product_id: products[5].id,
+      name: 'Bochechas & Respiradores Frontais',
+      filename: 'mando_cheeks_respirator.3mf',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 7120000,
+      file_type: '3MF',
+      image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=80',
+      quantity: 2,
+      weight_g: 80,
+      print_time_hours: 3.5,
+      notes: 'Suportes em árvore finos (tree support), camada 0.16mm para mínimo lixamento. PLA Prata.',
+      display_order: 2
+    },
+    {
+      id: uuidv4(),
+      product_id: products[5].id,
+      name: 'Orelhas & Tampa de Antena Lateral',
+      filename: 'mando_ears_antenna_caps.step',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 3450000,
+      file_type: 'STEP',
+      image_url: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=400&q=80',
+      quantity: 2,
+      weight_g: 50,
+      print_time_hours: 1.5,
+      notes: '100% infill para resistência mecânica. Rosca métrica M3 embutida.',
+      display_order: 3
+    },
+    {
+      id: uuidv4(),
+      product_id: products[5].id,
+      name: 'Travas e Suporte do Visor Fumê',
+      filename: 'mando_visor_mounting_clips.stl',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 1420000,
+      file_type: 'STL',
+      image_url: 'https://images.unsplash.com/photo-1586775490184-b79f0621891f?w=400&q=80',
+      quantity: 4,
+      weight_g: 20,
+      print_time_hours: 0.5,
+      notes: 'Imprimir em PETG Preto para flexibilidade no encaixe por pressão do visor acrílico.',
+      display_order: 4
+    }
+  ];
+  mandoParts.forEach(p => insertProductFile.run(p));
+
+  // Sub-peças da Luminária Lua (products[0])
+  const moonParts = [
+    {
+      id: uuidv4(),
+      product_id: products[0].id,
+      name: 'Globo Lunar Litofania 15cm',
+      filename: 'moon_15cm_lithophane_detailed.stl',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 35800000,
+      file_type: 'STL',
+      image_url: 'https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=400&q=80',
+      quantity: 1,
+      weight_g: 130,
+      print_time_hours: 11.5,
+      notes: '100% infill concêntrico, altura 0.12mm High Detail, PLA Branco Puro, bico 0.4mm.',
+      display_order: 1
+    },
+    {
+      id: uuidv4(),
+      product_id: products[0].id,
+      name: 'Base Tripé em Madeira / Encaixe',
+      filename: 'moon_tripod_base_wood.3mf',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 4200000,
+      file_type: '3MF',
+      image_url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&q=80',
+      quantity: 1,
+      weight_g: 45,
+      print_time_hours: 2.2,
+      notes: 'Filamento PLA Wood com acabamento lixado e verniz acetinado.',
+      display_order: 2
+    },
+    {
+      id: uuidv4(),
+      product_id: products[0].id,
+      name: 'Rosca e Soquete LED G9',
+      filename: 'led_socket_mount_g9.step',
+      file_url: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/ascii/slotted_disk.stl',
+      file_size: 890000,
+      file_type: 'STEP',
+      image_url: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400&q=80',
+      quantity: 1,
+      weight_g: 15,
+      print_time_hours: 0.8,
+      notes: 'PETG resistente a temperatura da lâmpada LED bivolt.',
+      display_order: 3
+    }
+  ];
+  moonParts.forEach(p => insertProductFile.run(p));
+
+  console.log('Database seeded successfully with products catalog and component parts!');
 }
 
 // Auto-run if executed directly via CLI

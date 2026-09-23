@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Client, ProcessType, Product } from '../types';
+import { Client, ProcessType, Product, ProductFile } from '../types';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
-import { X, Plus, Trash2, Calculator, Check, ShoppingBag, Zap } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Check, ShoppingBag, Zap, Layers, CheckSquare, Square, FileCode } from 'lucide-react';
 
 interface OrderModalProps {
   onClose: () => void;
@@ -23,6 +23,11 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
   const [selectedCatalogId, setSelectedCatalogId] = useState<string>('');
   const [loading, setLoading] = useState(false);
+
+  // Sub-peças selecionáveis ao importar do catálogo
+  const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
+  const [pendingParts, setPendingParts] = useState<ProductFile[]>([]);
+  const [selectedPendingPartIds, setSelectedPendingPartIds] = useState<Set<string>>(new Set());
 
   // Form State
   const [clientId, setClientId] = useState(initialClientId || '');
@@ -81,23 +86,72 @@ export const OrderModal: React.FC<OrderModalProps> = ({
     }
   };
 
-  const handleSelectCatalogProduct = (productId: string) => {
+  const handleSelectCatalogProduct = async (productId: string) => {
     if (!productId) return;
     const prod = catalogProducts.find(p => p.id === productId);
     if (!prod) return;
 
+    try {
+      const files = await api.getProductFiles(productId);
+      if (files && files.length > 0) {
+        setPendingProduct(prod);
+        setPendingParts(files);
+        setSelectedPendingPartIds(new Set(files.map(f => f.id)));
+        return;
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar sub-peças do produto para pedido:', err);
+    }
+
+    commitProductToOrder(prod, [], new Set());
+  };
+
+  const commitProductToOrder = (prod: Product, parts: ProductFile[], selectedIds: Set<string>) => {
     if (!title.trim()) {
       setTitle(`Produção: ${prod.name}`);
     }
 
+    const selectedParts = parts.filter(p => selectedIds.has(p.id));
+    const isPartial = parts.length > 0 && selectedParts.length < parts.length;
+
+    let cost = Number(prod.unit_cost) || 0;
+    let price = Number(prod.unit_price) || 0;
+
+    if (parts.length > 0 && selectedParts.length > 0) {
+      const hasWeights = parts.some(p => (Number(p.weight_g) || 0) > 0);
+      let ratio = 1;
+      if (hasWeights) {
+        const totalWeight = parts.reduce((acc, p) => acc + (Number(p.weight_g) || 0) * (Number(p.quantity) || 1), 0);
+        const selWeight = selectedParts.reduce((acc, p) => acc + (Number(p.weight_g) || 0) * (Number(p.quantity) || 1), 0);
+        ratio = totalWeight > 0 ? selWeight / totalWeight : 1;
+      } else {
+        const totalQty = parts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+        const selQty = selectedParts.reduce((acc, p) => acc + (Number(p.quantity) || 1), 0);
+        ratio = totalQty > 0 ? selQty / totalQty : 1;
+      }
+      cost = Number((cost * ratio).toFixed(2));
+      price = Number((price * ratio).toFixed(2));
+    }
+
+    const descParts = parts.length > 0
+      ? isPartial
+        ? ` [${selectedParts.length}/${parts.length} peças: ${selectedParts.map(p => `${p.name} ${p.quantity}x`).join(', ')}]`
+        : ` [Projeto Completo: ${parts.length} peças]`
+      : '';
+
     const newItem = {
       process_type: prod.process_type,
-      description: `[${prod.sku || 'PRD'}] ${prod.name}`,
+      description: `[${prod.sku || 'PRD'}] ${prod.name}${descParts}`,
       quantity: 1,
       material_id: prod.material_id || '',
       equipment_id: prod.equipment_id || '',
-      unit_cost: prod.unit_cost || 0,
-      unit_price: prod.unit_price || 0,
+      unit_cost: cost,
+      unit_price: price,
+      product_id: prod.id,
+      calc_params: {
+        selected_parts: selectedParts,
+        is_partial: isPartial,
+      },
     };
 
     // If there's only 1 item and it's empty, replace it
@@ -106,6 +160,9 @@ export const OrderModal: React.FC<OrderModalProps> = ({
     } else {
       setItems([...items, newItem]);
     }
+    setPendingProduct(null);
+    setPendingParts([]);
+    setSelectedPendingPartIds(new Set());
     setSelectedCatalogId('');
   };
 
@@ -352,6 +409,151 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                       </option>
                     ))}
                   </select>
+                </div>
+              )}
+
+              {/* Box de Seleção de Sub-peças do Produto Escolhido */}
+              {pendingProduct && pendingParts.length > 0 && (
+                <div
+                  style={{
+                    background: 'color-mix(in srgb, var(--brand-primary) 8%, var(--bg-surface))',
+                    border: '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '14px 16px',
+                    marginBottom: 16,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Layers size={18} color="var(--brand-primary)" />
+                      <div>
+                        <strong style={{ fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                          Personalizar Sub-peças: {pendingProduct.name}
+                        </strong>
+                        <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
+                          Selecione quais partes deste projeto serão produzidas ({selectedPendingPartIds.size} de {pendingParts.length} selecionadas). O valor ajusta proporcionalmente.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setSelectedPendingPartIds(new Set(pendingParts.map(p => p.id)))}
+                        style={{ fontSize: '0.74rem', padding: '4px 8px' }}
+                      >
+                        Todas
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setSelectedPendingPartIds(new Set())}
+                        style={{ fontSize: '0.74rem', padding: '4px 8px' }}
+                      >
+                        Nenhuma
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 8 }}>
+                    {pendingParts.map(part => {
+                      const isChecked = selectedPendingPartIds.has(part.id);
+                      return (
+                        <div
+                          key={part.id}
+                          onClick={() => {
+                            setSelectedPendingPartIds(prev => {
+                              const next = new Set(prev);
+                              if (next.has(part.id)) next.delete(part.id);
+                              else next.add(part.id);
+                              return next;
+                            });
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                            userSelect: 'none',
+                            background: isChecked ? 'color-mix(in srgb, var(--brand-primary) 14%, transparent)' : 'rgba(0,0,0,0.2)',
+                            border: isChecked ? '1px solid var(--brand-primary)' : '1px dashed var(--border-subtle)',
+                            opacity: isChecked ? 1 : 0.6,
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: 5,
+                              border: isChecked ? '2px solid var(--brand-primary)' : '2px solid var(--text-muted)',
+                              background: isChecked ? 'var(--brand-primary)' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {isChecked && <Check size={12} strokeWidth={3} />}
+                          </div>
+
+                          {part.image_url ? (
+                            <img
+                              src={part.image_url}
+                              alt={part.name}
+                              style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <FileCode size={18} color={isChecked ? 'var(--brand-primary)' : 'var(--text-muted)'} />
+                          )}
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: isChecked ? 'var(--text-primary)' : 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {part.name}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', gap: 6, marginTop: 2 }}>
+                              <span style={{ fontWeight: 700 }}>{part.quantity || 1}x</span>
+                              {part.weight_g ? <span>• {part.weight_g}g</span> : null}
+                              {part.print_time_hours ? <span>• {part.print_time_hours}h</span> : null}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        setPendingProduct(null);
+                        setPendingParts([]);
+                        setSelectedPendingPartIds(new Set());
+                      }}
+                      style={{ fontSize: '0.78rem' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => commitProductToOrder(pendingProduct, pendingParts, selectedPendingPartIds)}
+                      disabled={selectedPendingPartIds.size === 0}
+                      style={{ fontSize: '0.78rem', fontWeight: 700 }}
+                    >
+                      <Plus size={14} />
+                      <span>Adicionar {selectedPendingPartIds.size} sub-peça(s) ao Pedido</span>
+                    </button>
+                  </div>
                 </div>
               )}
 

@@ -107,6 +107,30 @@ export const api = {
   updateProduct: (id: string, data: any) => request<any>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProduct: (id: string) => request<any>(`/products/${id}`, { method: 'DELETE' }),
 
+  // Product Images
+  getProductImages: (productId: string) => request<any[]>(`/products/${productId}/images`),
+  addProductImages: (productId: string, data: { image_url?: string; images?: any[]; title?: string; is_cover?: boolean }) =>
+    request<any>(`/products/${productId}/images`, { method: 'POST', body: JSON.stringify(data) }),
+  setProductCoverImage: (productId: string, imageId: string) =>
+    request<any>(`/products/${productId}/images/${imageId}/cover`, { method: 'PUT' }),
+  updateProductImage: (productId: string, imageId: string, data: { title?: string }) =>
+    request<any>(`/products/${productId}/images/${imageId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteProductImage: (productId: string, imageId: string) =>
+    request<any>(`/products/${productId}/images/${imageId}`, { method: 'DELETE' }),
+  deleteProductImagesBatch: (productId: string, imageIds: string[]) =>
+    request<any>(`/products/${productId}/images/delete-batch`, { method: 'POST', body: JSON.stringify({ imageIds }) }),
+
+  // Product Files & Sub-parts
+  getProductFiles: (productId: string) => request<any[]>(`/products/${productId}/files`),
+  addProductFile: (productId: string, data: any) =>
+    request<any>(`/products/${productId}/files`, { method: 'POST', body: JSON.stringify(data) }),
+  updateProductFile: (productId: string, fileId: string, data: any) =>
+    request<any>(`/products/${productId}/files/${fileId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteProductFile: (productId: string, fileId: string) =>
+    request<any>(`/products/${productId}/files/${fileId}`, { method: 'DELETE' }),
+
+
+
   // WhatsApp
   generateWhatsAppLink: (phone: string, message: string) =>
     request<any>('/whatsapp/link', { method: 'POST', body: JSON.stringify({ phone, message }) }),
