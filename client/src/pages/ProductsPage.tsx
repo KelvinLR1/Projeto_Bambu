@@ -61,6 +61,56 @@ const FieldGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ la
   </div>
 );
 
+const ActionBtn: React.FC<{
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  icon: React.ReactNode;
+  hoverBg?: string;
+  hoverBorder?: string;
+  hoverColor?: string;
+  danger?: boolean;
+}> = ({ onClick, title, icon, hoverBg, hoverBorder, hoverColor, danger }) => {
+  const [btnHovered, setBtnHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={e => {
+        e.stopPropagation();
+        onClick(e);
+      }}
+      onMouseEnter={() => setBtnHovered(true)}
+      onMouseLeave={() => setBtnHovered(false)}
+      title={title}
+      style={{
+        background: btnHovered
+          ? (hoverBg || (danger ? 'rgba(239, 68, 68, 0.28)' : 'rgba(255, 255, 255, 0.2)'))
+          : 'rgba(255, 255, 255, 0.08)',
+        border: `1px solid ${
+          btnHovered
+            ? (hoverBorder || (danger ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 255, 255, 0.35)'))
+            : 'rgba(255, 255, 255, 0.1)'
+        }`,
+        color: btnHovered ? (hoverColor || (danger ? '#fca5a5' : '#fff')) : 'rgba(255, 255, 255, 0.85)',
+        borderRadius: 9,
+        width: 32,
+        height: 32,
+        minWidth: 32,
+        minHeight: 32,
+        flexShrink: 0,
+        boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
+        boxShadow: btnHovered ? (danger ? '0 0 12px rgba(239, 68, 68, 0.4)' : '0 0 12px rgba(255, 255, 255, 0.25)') : 'none',
+      }}
+    >
+      {icon}
+    </button>
+  );
+};
+
 interface ProductCardProps {
   product: Product;
   onEdit: () => void;
@@ -84,7 +134,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onOpenImages
         borderRadius: 16,
         border: hovered ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.07)',
         overflow: 'hidden',
-        transition: 'all 0.2s ease',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
         transform: hovered ? 'translateY(-3px)' : 'none',
         boxShadow: hovered ? '0 12px 40px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.15)',
         cursor: 'pointer',
@@ -93,12 +143,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onOpenImages
       onMouseLeave={() => setHovered(false)}
       onClick={onEdit}
     >
-      <div style={{ position: 'relative', aspectRatio: '4/3', background: 'rgba(255,255,255,0.03)' }}>
+      <div style={{ position: 'relative', aspectRatio: '4/3', background: 'rgba(255,255,255,0.03)', overflow: 'hidden' }}>
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              position: 'absolute',
+              top: -12,
+              left: -12,
+              right: -12,
+              bottom: -12,
+              width: 'calc(100% + 24px)',
+              height: 'calc(100% + 24px)',
+              objectFit: 'cover',
+              display: 'block',
+              filter: hovered ? 'blur(6px) brightness(0.55)' : 'blur(0px) brightness(1)',
+              transition: 'filter 0.2s ease',
+              willChange: 'filter',
+            }}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
@@ -107,13 +170,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onOpenImages
           </div>
         )}
 
-        {/* Process badge */}
-        <div style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', borderRadius: 6, padding: '3px 8px', fontSize: '0.7rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
+        {/* Process badge - always clear and unblocked */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            zIndex: 10,
+            background: 'rgba(10, 14, 23, 0.75)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 7,
+            padding: '3px 8px',
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
           <span>{meta.icon}</span> {meta.label}
         </div>
 
-        {/* Badges row: images count and files count */}
-        <div style={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', gap: 6 }}>
+        {/* Badges row: images count and files count (fades smoothly on hover to reduce clutter) */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 10,
+            right: 10,
+            zIndex: 4,
+            display: 'flex',
+            gap: 6,
+            opacity: hovered ? 0 : 1,
+            transition: 'opacity 0.2s ease',
+          }}
+        >
           {filesCount > 0 && (
             <div
               onClick={e => {
@@ -167,79 +260,103 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onOpenImages
           )}
         </div>
 
-        {/* Action icons on hover */}
-        <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 6, opacity: hovered ? 1 : 0, transition: 'opacity 0.2s' }}>
-          <button
-            onClick={e => { e.stopPropagation(); onOpenFiles(); }}
-            style={{ background: 'rgba(59, 130, 246, 0.85)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Arquivos e Sub-peças 3D"
+        {/* Premium Dark Scrim Overlay with Centered Floating Dock */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -12,
+            left: -12,
+            right: -12,
+            bottom: -12,
+            zIndex: 6,
+            background: 'linear-gradient(180deg, rgba(8, 10, 15, 0.25) 0%, rgba(8, 10, 15, 0.75) 100%)',
+            backdropFilter: 'blur(6px)',
+            opacity: hovered ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+            pointerEvents: hovered ? 'auto' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '12px 22px',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              background: 'rgba(15, 20, 30, 0.94)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.16)',
+              borderRadius: 14,
+              padding: '5px 7px',
+              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4)',
+              opacity: hovered ? 1 : 0,
+              transition: 'opacity 0.2s ease',
+            }}
           >
-            <Layers size={13} />
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onOpenImages(); }}
-            style={{ background: 'rgba(16, 185, 129, 0.85)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Galeria de Imagens e WhatsApp"
-          >
-            <ImageIcon size={13} />
-          </button>
-          {onCalculate && (
-            <button
-              onClick={e => { e.stopPropagation(); onCalculate(); }}
-              style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              title="Simular na Calculadora"
-            >
-              <Calculator size={13} />
-            </button>
-          )}
-          {onOrder && (
-            <button
-              onClick={e => { e.stopPropagation(); onOrder(); }}
-              style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              title="Emitir Pedido"
-            >
-              <Zap size={13} />
-            </button>
-          )}
-          <button
-            onClick={e => { e.stopPropagation(); onDelete(); }}
-            style={{ background: 'rgba(239,68,68,0.75)', backdropFilter: 'blur(8px)', border: 'none', color: '#fff', borderRadius: 7, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Remover"
-          >
-            <Trash2 size={13} />
-          </button>
+            <ActionBtn
+              onClick={onOpenFiles}
+              title="Arquivos e Peças 3D"
+              icon={<Layers size={14} />}
+              hoverBg="rgba(59, 130, 246, 0.28)"
+              hoverBorder="rgba(59, 130, 246, 0.55)"
+              hoverColor="#60a5fa"
+            />
+            <ActionBtn
+              onClick={onOpenImages}
+              title="Galeria de Fotos"
+              icon={<ImageIcon size={14} />}
+              hoverBg="rgba(16, 185, 129, 0.28)"
+              hoverBorder="rgba(16, 185, 129, 0.55)"
+              hoverColor="#34d399"
+            />
+            <ActionBtn
+              onClick={onEdit}
+              title="Editar Especificações"
+              icon={<Edit3 size={14} />}
+              hoverBg="rgba(168, 85, 247, 0.28)"
+              hoverBorder="rgba(168, 85, 247, 0.55)"
+              hoverColor="#c084fc"
+            />
+            {onCalculate && (
+              <ActionBtn
+                onClick={onCalculate}
+                title="Simular na Calculadora"
+                icon={<Calculator size={14} />}
+                hoverBg="rgba(245, 158, 11, 0.28)"
+                hoverBorder="rgba(245, 158, 11, 0.55)"
+                hoverColor="#fbbf24"
+              />
+            )}
+            {onOrder && (
+              <ActionBtn
+                onClick={onOrder}
+                title="Emitir Pedido Direto"
+                icon={<Zap size={14} />}
+                hoverBg="rgba(16, 185, 129, 0.28)"
+                hoverBorder="rgba(16, 185, 129, 0.55)"
+                hoverColor="#34d399"
+              />
+            )}
+            <div style={{ width: 1, height: 18, background: 'rgba(255, 255, 255, 0.12)', margin: '0 2px', flexShrink: 0 }} />
+            <ActionBtn
+              onClick={onDelete}
+              title="Remover Produto"
+              icon={<Trash2 size={14} />}
+              danger
+            />
+          </div>
         </div>
       </div>
 
       <div style={{ padding: '14px 16px 16px' }}>
         <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{product.name}</div>
         {product.sku && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 10 }}>{product.sku}</div>}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#10b981' }}>{formatCurrency(product.unit_price || 0)}</div>
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#10b981' }}>{formatCurrency(product.unit_price || 0)}</div>
             {product.margin_percent != null && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{product.margin_percent}% margem</div>}
-          </div>
-          <div style={{ display: 'flex', gap: 5 }}>
-            <button
-              onClick={e => { e.stopPropagation(); onOpenFiles(); }}
-              style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#3b82f6', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 4 }}
-              title="Arquivos das peças do modelo"
-            >
-              <Layers size={12} /> Peças
-            </button>
-            <button
-              onClick={e => { e.stopPropagation(); onOpenImages(); }}
-              style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 4 }}
-              title="Ver fotos da peça"
-            >
-              <ImageIcon size={12} /> Fotos
-            </button>
-            <button
-              onClick={e => { e.stopPropagation(); onEdit(); }}
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <Edit3 size={12} /> Editar
-            </button>
           </div>
         </div>
       </div>
@@ -372,6 +489,8 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
     { key: 'FDM', label: 'FDM' },
     { key: 'RESIN', label: 'Resina' },
     { key: 'LASER', label: 'Laser' },
+    { key: 'PINTURA', label: 'Pintura' },
+    { key: 'ADESIVO', label: 'Adesivos' },
   ];
 
   const handleOpenEditor = async (prod?: Product, initialTab: 'specs' | 'images' | 'files' = 'specs') => {
@@ -954,10 +1073,17 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
     if (formData.process_type === 'FDM') return materials.fdm || [];
     if (formData.process_type === 'RESIN') return materials.resin || [];
     if (formData.process_type === 'LASER') return materials.laser || [];
+    if (formData.process_type === 'ADESIVO') return materials.stickers || [];
+    if (formData.process_type === 'PINTURA') return materials.finishing || [];
     return [];
   };
 
-  const getEquipmentsForProcess = () => equipments.filter(e => e.type === formData.process_type);
+  const getEquipmentsForProcess = () => {
+    if (formData.process_type === 'ADESIVO') {
+      return equipments.filter(e => ['PLOTTER', 'STICKER_PRINTER', 'LAMINATOR'].includes(e.type));
+    }
+    return equipments.filter(e => e.type === formData.process_type);
+  };
   const processMeta = PROCESS_MAP[formData.process_type] || { label: formData.process_type, icon: '📦' };
   const profit = (formData.unit_price || 0) - (formData.unit_cost || 0);
 
@@ -1214,13 +1340,13 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ onGenerateOrderFromP
                       </select>
                     </FieldGroup>
                     <FieldGroup label="Processo">
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {(['FDM','RESIN','LASER'] as ProcessType[]).map(pt => {
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {(['FDM', 'RESIN', 'LASER', 'PINTURA', 'ADESIVO'] as ProcessType[]).map(pt => {
                           const meta = PROCESS_MAP[pt] || { label: pt, icon: '⚙' };
                           const active = formData.process_type === pt;
                           return (
                             <button key={pt} type="button" onClick={() => setFormData(p => ({ ...p, process_type: pt, material_id: '', equipment_id: '' }))}
-                              style={{ flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer', border: active ? '2px solid var(--brand-primary)' : '1px solid var(--border-subtle)', background: active ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)', color: active ? 'var(--brand-primary)' : 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                              style={{ flex: 1, minWidth: 70, padding: '9px 6px', borderRadius: 8, cursor: 'pointer', border: active ? '2px solid var(--brand-primary)' : '1px solid var(--border-subtle)', background: active ? 'color-mix(in srgb, var(--brand-primary) 15%, transparent)' : 'var(--bg-surface-elevated)', color: active ? 'var(--brand-primary)' : 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                               <span style={{ fontSize: '1rem' }}>{meta.icon}</span>{meta.label}
                             </button>
                           );

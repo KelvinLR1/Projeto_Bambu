@@ -53,6 +53,28 @@ export interface PaintingCalcInput {
   profitMarginPercent?: number;
 }
 
+export interface StickerCalcInput {
+  sheetPrice: number;
+  sheetWidthMm?: number;
+  sheetHeightMm?: number;
+  stickerWidthMm: number;
+  stickerHeightMm: number;
+  spacingMm?: number;
+  marginMm?: number;
+  quantityTotal: number;
+  inkCostPerSheet?: number;
+  hasLamination?: boolean;
+  laminationCostPerSheet?: number;
+  cutHours?: number;
+  powerWatts?: number;
+  kwhCost?: number;
+  plotterHourlyDepreciation?: number;
+  laborHours?: number;
+  laborRateHour?: number;
+  wasteBufferPercent?: number;
+  profitMarginPercent?: number;
+}
+
 export function calculateFdmCost(input: FdmCalcInput) {
   const {
     spoolPrice,
@@ -212,6 +234,97 @@ export function calculatePaintingCost(input: PaintingCalcInput) {
     partSize,
     totalCost: Number(totalCost.toFixed(2)),
     suggestedPrice: Number(finalPrice.toFixed(2)),
+    marginAmount: Number((finalPrice - totalCost).toFixed(2)),
+    marginPercent: profitMarginPercent
+  };
+}
+
+export function calculateStickerCost(input: StickerCalcInput) {
+  const {
+    sheetPrice,
+    sheetWidthMm = 210,
+    sheetHeightMm = 297,
+    stickerWidthMm,
+    stickerHeightMm,
+    spacingMm = 3,
+    marginMm = 10,
+    quantityTotal = 1,
+    inkCostPerSheet = 0.50,
+    hasLamination = false,
+    laminationCostPerSheet = 0.35,
+    cutHours = 0.2,
+    powerWatts = 60,
+    kwhCost = 0.92,
+    plotterHourlyDepreciation = 1.20,
+    laborHours = 0.2,
+    laborRateHour = 25,
+    wasteBufferPercent = 5,
+    profitMarginPercent = 65
+  } = input;
+
+  // Área útil da folha descontando margens da plotter (marcas de registro)
+  const usableWidth = Math.max(10, sheetWidthMm - (marginMm * 2));
+  const usableHeight = Math.max(10, sheetHeightMm - (marginMm * 2));
+
+  // Dimensão com espaçamento
+  const itemW = Math.max(1, stickerWidthMm + spacingMm);
+  const itemH = Math.max(1, stickerHeightMm + spacingMm);
+
+  // Orientação Normal (sem girar)
+  const colsNormal = Math.floor(usableWidth / itemW);
+  const rowsNormal = Math.floor(usableHeight / itemH);
+  const countNormal = Math.max(1, colsNormal * rowsNormal);
+
+  // Orientação Rotacionada 90 graus
+  const colsRotated = Math.floor(usableWidth / itemH);
+  const rowsRotated = Math.floor(usableHeight / itemW);
+  const countRotated = Math.max(1, colsRotated * rowsRotated);
+
+  // Melhor aproveitamento
+  const stickersPerSheet = Math.max(countNormal, countRotated);
+  const isRotatedBest = countRotated > countNormal;
+
+  // Folhas ou metros necessários
+  const safeQuantity = Math.max(1, Number(quantityTotal) || 1);
+  const sheetsNeeded = Math.ceil(safeQuantity / stickersPerSheet);
+
+  // Eficiência de área (%)
+  const singleAreaMm2 = stickerWidthMm * stickerHeightMm;
+  const totalSheetAreaMm2 = sheetWidthMm * sheetHeightMm;
+  const areaEfficiencyPercent = Math.min(100, Math.round(((stickersPerSheet * singleAreaMm2) / totalSheetAreaMm2) * 100));
+
+  // Custos
+  const mediaCost = sheetsNeeded * sheetPrice;
+  const inkCost = sheetsNeeded * inkCostPerSheet;
+  const laminationCost = hasLamination ? (sheetsNeeded * laminationCostPerSheet) : 0;
+  const energyCost = (powerWatts / 1000) * cutHours * kwhCost;
+  const machineDepreciation = cutHours * plotterHourlyDepreciation;
+  const laborCost = laborHours * laborRateHour;
+
+  const baseCost = mediaCost + inkCost + laminationCost + energyCost + machineDepreciation + laborCost;
+  const wasteBuffer = baseCost * (wasteBufferPercent / 100);
+  const totalCost = baseCost + wasteBuffer;
+
+  const finalPrice = totalCost * (1 + (profitMarginPercent / 100));
+  const unitCost = totalCost / safeQuantity;
+  const unitPrice = finalPrice / safeQuantity;
+
+  return {
+    stickersPerSheet,
+    sheetsNeeded,
+    isRotatedBest,
+    areaEfficiencyPercent,
+    mediaCost: Number(mediaCost.toFixed(2)),
+    inkCost: Number(inkCost.toFixed(2)),
+    laminationCost: Number(laminationCost.toFixed(2)),
+    energyCost: Number(energyCost.toFixed(2)),
+    machineDepreciation: Number(machineDepreciation.toFixed(2)),
+    laborCost: Number(laborCost.toFixed(2)),
+    wasteBuffer: Number(wasteBuffer.toFixed(2)),
+    totalCost: Number(totalCost.toFixed(2)),
+    suggestedPrice: Number(finalPrice.toFixed(2)),
+    unitCost: Number(unitCost.toFixed(3)),
+    unitPrice: Number(unitPrice.toFixed(2)),
     marginAmount: Number((finalPrice - totalCost).toFixed(2)),
     marginPercent: profitMarginPercent
   };

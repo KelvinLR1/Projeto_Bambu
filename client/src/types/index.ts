@@ -9,7 +9,7 @@ export type OrderStatus =
   | 'ENTREGUE'
   | 'CANCELADO';
 
-export type ProcessType = 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'COMBO';
+export type ProcessType = 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO' | 'COMBO';
 
 export interface Client {
   id: string;
@@ -80,10 +80,27 @@ export interface MaterialFinishing {
   active: number;
 }
 
+export interface MaterialSticker {
+  id: string;
+  name: string;
+  brand?: string;
+  finish: string;
+  unit_type: string;
+  sheet_width_mm: number;
+  sheet_height_mm: number;
+  unit_price: number;
+  ink_cost_per_unit: number;
+  lamination_cost_per_unit: number;
+  color_hex?: string;
+  stock_qty: number;
+  min_stock_qty: number;
+  active: number;
+}
+
 export interface Equipment {
   id: string;
   name: string;
-  type: 'FDM' | 'RESIN' | 'LASER' | 'AIRBRUSH' | 'BOOTH';
+  type: 'FDM' | 'RESIN' | 'LASER' | 'AIRBRUSH' | 'BOOTH' | 'PLOTTER' | 'STICKER_PRINTER' | 'LAMINATOR';
   power_watts: number;
   purchase_cost: number;
   lifespan_hours: number;
@@ -204,7 +221,7 @@ export interface FinancialSummary {
 
 export interface StockAlert {
   id: string;
-  type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA';
+  type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO';
   name: string;
   currentStock: number;
   minStock: number;

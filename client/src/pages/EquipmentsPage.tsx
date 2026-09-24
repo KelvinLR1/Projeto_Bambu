@@ -611,6 +611,9 @@ export const EquipmentsPage: React.FC = () => {
                       <option value="LASER">Corte & Gravação Laser</option>
                       <option value="AIRBRUSH">Aerógrafo / Pintura</option>
                       <option value="BOOTH">Cabine de Pintura</option>
+                      <option value="PLOTTER">Plotter de Recorte (Adesivos)</option>
+                      <option value="STICKER_PRINTER">Impressora de Adesivos / Fotográfica</option>
+                      <option value="LAMINATOR">Laminadora Térmica / Frio</option>
                     </select>
                   </div>
 

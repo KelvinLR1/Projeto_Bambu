@@ -12,6 +12,7 @@ router.get('/', (req, res) => {
     const resin = db.prepare(`SELECT * FROM materials_resin ORDER BY name ASC`).all();
     const laser = db.prepare(`SELECT * FROM materials_laser ORDER BY name ASC`).all();
     const finishing = db.prepare(`SELECT * FROM materials_finishing ORDER BY category ASC, name ASC`).all();
+    const stickers = db.prepare(`SELECT * FROM materials_stickers ORDER BY name ASC`).all();
     const alerts = getLowStockAlerts();
 
     // Summary calculation
@@ -28,12 +29,16 @@ router.get('/', (req, res) => {
     (finishing as any[]).forEach(i => {
       totalStockValue += i.stock_qty * i.cost_per_unit;
     });
+    (stickers as any[]).forEach(i => {
+      totalStockValue += i.stock_qty * i.unit_price;
+    });
 
     res.json({
       fdm,
       resin,
       laser,
       finishing,
+      stickers,
       alerts,
       summary: {
         totalStockValue: Number(totalStockValue.toFixed(2)),
@@ -41,7 +46,8 @@ router.get('/', (req, res) => {
         fdmCount: fdm.length,
         resinCount: resin.length,
         laserCount: laser.length,
-        finishingCount: finishing.length
+        finishingCount: finishing.length,
+        stickersCount: stickers.length
       }
     });
   } catch (error: any) {
@@ -211,11 +217,115 @@ router.delete('/finishing/:id', (req, res) => {
   }
 });
 
+// --- Stickers & Vinyl CRUD ---
+router.post('/stickers', (req, res) => {
+  try {
+    const id = uuidv4();
+    const {
+      name,
+      brand,
+      finish,
+      unit_type,
+      sheet_width_mm,
+      sheet_height_mm,
+      unit_price,
+      ink_cost_per_unit,
+      lamination_cost_per_unit,
+      color_hex,
+      stock_qty,
+      min_stock_qty
+    } = req.body;
+
+    db.prepare(`
+      INSERT INTO materials_stickers (
+        id, name, brand, finish, unit_type, sheet_width_mm, sheet_height_mm,
+        unit_price, ink_cost_per_unit, lamination_cost_per_unit, color_hex,
+        stock_qty, min_stock_qty
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      name,
+      brand || null,
+      finish || 'BRILHO',
+      unit_type || 'FOLHA_A4',
+      Number(sheet_width_mm) || 210,
+      Number(sheet_height_mm) || 297,
+      Number(unit_price),
+      Number(ink_cost_per_unit) || 0.50,
+      Number(lamination_cost_per_unit) || 0.35,
+      color_hex || '#3b82f6',
+      Number(stock_qty) || 0,
+      Number(min_stock_qty) || 0
+    );
+
+    res.status(201).json(db.prepare(`SELECT * FROM materials_stickers WHERE id = ?`).get(id));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/stickers/:id', (req, res) => {
+  try {
+    const {
+      name,
+      brand,
+      finish,
+      unit_type,
+      sheet_width_mm,
+      sheet_height_mm,
+      unit_price,
+      ink_cost_per_unit,
+      lamination_cost_per_unit,
+      color_hex,
+      stock_qty,
+      min_stock_qty,
+      active
+    } = req.body;
+
+    db.prepare(`
+      UPDATE materials_stickers
+      SET name = ?, brand = ?, finish = ?, unit_type = ?, sheet_width_mm = ?, sheet_height_mm = ?,
+          unit_price = ?, ink_cost_per_unit = ?, lamination_cost_per_unit = ?, color_hex = ?,
+          stock_qty = ?, min_stock_qty = ?, active = ?
+      WHERE id = ?
+    `).run(
+      name,
+      brand || null,
+      finish,
+      unit_type,
+      Number(sheet_width_mm),
+      Number(sheet_height_mm),
+      Number(unit_price),
+      Number(ink_cost_per_unit),
+      Number(lamination_cost_per_unit),
+      color_hex,
+      Number(stock_qty),
+      Number(min_stock_qty),
+      active ?? 1,
+      req.params.id
+    );
+
+    res.json(db.prepare(`SELECT * FROM materials_stickers WHERE id = ?`).get(req.params.id));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/stickers/:id', (req, res) => {
+  try {
+    db.prepare(`DELETE FROM materials_stickers WHERE id = ?`).run(req.params.id);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Quick stock adjustment (e.g. bought a new spool or restocked)
 router.post('/adjust-stock', (req, res) => {
   try {
     const { table, id, changeAmount } = req.body;
-    if (!['materials_fdm', 'materials_resin', 'materials_laser', 'materials_finishing'].includes(table)) {
+    if (!['materials_fdm', 'materials_resin', 'materials_laser', 'materials_finishing', 'materials_stickers'].includes(table)) {
       return res.status(400).json({ error: 'Tabela inválida' });
     }
 
@@ -223,7 +333,8 @@ router.post('/adjust-stock', (req, res) => {
       materials_fdm: 'stock_weight_g',
       materials_resin: 'stock_volume_ml',
       materials_laser: 'stock_sheets',
-      materials_finishing: 'stock_qty'
+      materials_finishing: 'stock_qty',
+      materials_stickers: 'stock_qty'
     };
     const field = fieldMap[table];
 

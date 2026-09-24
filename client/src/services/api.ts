@@ -50,6 +50,10 @@ export const api = {
   updateMaterialFinishing: (id: string, data: any) => request<any>(`/materials/finishing/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteMaterialFinishing: (id: string) => request<any>(`/materials/finishing/${id}`, { method: 'DELETE' }),
 
+  createMaterialSticker: (data: any) => request<any>('/materials/stickers', { method: 'POST', body: JSON.stringify(data) }),
+  updateMaterialSticker: (id: string, data: any) => request<any>(`/materials/stickers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteMaterialSticker: (id: string) => request<any>(`/materials/stickers/${id}`, { method: 'DELETE' }),
+
   adjustStock: (table: string, id: string, changeAmount: number) =>
     request<any>('/materials/adjust-stock', { method: 'POST', body: JSON.stringify({ table, id, changeAmount }) }),
 
@@ -78,6 +82,7 @@ export const api = {
   calculateResin: (data: any) => request<any>('/calculator/resin', { method: 'POST', body: JSON.stringify(data) }),
   calculateLaser: (data: any) => request<any>('/calculator/laser', { method: 'POST', body: JSON.stringify(data) }),
   calculatePainting: (data: any) => request<any>('/calculator/painting', { method: 'POST', body: JSON.stringify(data) }),
+  calculateSticker: (data: any) => request<any>('/calculator/sticker', { method: 'POST', body: JSON.stringify(data) }),
 
   // Failures & Scrap
   getFailures: () => request<any>('/failures'),

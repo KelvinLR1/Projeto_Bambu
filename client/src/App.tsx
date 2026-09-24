@@ -156,7 +156,7 @@ export function App() {
 
       {/* Main Viewport Content */}
       <div className="app-main-content">
-        <main style={{ minHeight: '100vh', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <main style={{ minHeight: 'calc(100vh / 0.85)', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div key={activeTab} className="page-transition-wrapper">
             {activeTab === 'order-detail' && selectedOrderId && (
               <OrderDetailPage

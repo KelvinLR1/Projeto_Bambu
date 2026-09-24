@@ -2,7 +2,7 @@ import db from '../database/db.js';
 
 export interface StockAlert {
   id: string;
-  type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA';
+  type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO';
   name: string;
   currentStock: number;
   minStock: number;
@@ -89,6 +89,25 @@ export function getLowStockAlerts(): StockAlert[] {
     });
   });
 
+  // Stickers / Vinyl
+  const stickerItems = db.prepare(`
+    SELECT id, name, brand, finish, unit_type, stock_qty, min_stock_qty
+    FROM materials_stickers
+    WHERE active = 1 AND stock_qty <= min_stock_qty
+  `).all() as any[];
+
+  stickerItems.forEach(item => {
+    alerts.push({
+      id: item.id,
+      type: 'ADESIVO',
+      name: `Adesivo: ${item.name} (${item.finish})`,
+      currentStock: item.stock_qty,
+      minStock: item.min_stock_qty,
+      unit: item.unit_type.toLowerCase().includes('folha') ? 'folhas' : 'm',
+      percentageLeft: Math.round((item.stock_qty / (item.min_stock_qty * 2 || 50)) * 100)
+    });
+  });
+
   return alerts;
 }
 
@@ -123,11 +142,18 @@ export function deductStockForOrder(orderId: string) {
         SET stock_sheets = MAX(0, stock_sheets - ?)
         WHERE id = ?
       `).run(params.sheets * item.quantity, item.material_id);
+    } else if (item.process_type === 'ADESIVO' && item.material_id && (params.sheetsNeeded || params.sheets)) {
+      const sheetsToDeduct = (params.sheetsNeeded || params.sheets || 1) * item.quantity;
+      db.prepare(`
+        UPDATE materials_stickers
+        SET stock_qty = MAX(0, stock_qty - ?)
+        WHERE id = ?
+      `).run(sheetsToDeduct, item.material_id);
     }
 
     // Se houver equipamento associado, soma as horas no horômetro
-    if (item.equipment_id && (params.hours || params.printHours || params.laserHours)) {
-      const hoursToAdd = (params.hours || params.printHours || params.laserHours || 0) * item.quantity;
+    if (item.equipment_id && (params.hours || params.printHours || params.laserHours || params.cutHours)) {
+      const hoursToAdd = (params.hours || params.printHours || params.laserHours || params.cutHours || 0) * item.quantity;
       db.prepare(`
         UPDATE equipments
         SET total_hours = total_hours + ?,

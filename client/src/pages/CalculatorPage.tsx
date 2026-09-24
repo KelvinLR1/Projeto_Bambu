@@ -8,6 +8,7 @@ import {
   TestTube, 
   Zap, 
   Paintbrush, 
+  Tag,
   PlusCircle, 
   ArrowRight,
   FolderOpen,
@@ -357,8 +358,8 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   initialProduct,
   onClearInitialProduct,
 }) => {
-  const [activeTab, setActiveTab] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA'>('FDM');
-  const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [] });
+  const [activeTab, setActiveTab] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO'>('FDM');
+  const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [], stickers: [] });
   const [equipments, setEquipments] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -410,6 +411,23 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const [paintMargin, setPaintMargin] = useState(70);
   const [paintResult, setPaintResult] = useState<any>(null);
 
+  // Sticker / Vinyl State
+  const [stickerMaterialId, setStickerMaterialId] = useState('');
+  const [stickerEquipId, setStickerEquipId] = useState('');
+  const [stickerFormat, setStickerFormat] = useState<'A4' | 'A3' | 'METRO' | 'CUSTOM'>('A4');
+  const [stickerSheetWidth, setStickerSheetWidth] = useState(210);
+  const [stickerSheetHeight, setStickerSheetHeight] = useState(297);
+  const [stickerWidthMm, setStickerWidthMm] = useState(50);
+  const [stickerHeightMm, setStickerHeightMm] = useState(50);
+  const [stickerSpacingMm, setStickerSpacingMm] = useState(3);
+  const [stickerMarginMm, setStickerMarginMm] = useState(10);
+  const [stickerQuantityTotal, setStickerQuantityTotal] = useState(100);
+  const [stickerHasLamination, setStickerHasLamination] = useState(false);
+  const [stickerCutHours, setStickerCutHours] = useState(0.3);
+  const [stickerLaborHours, setStickerLaborHours] = useState(0.4);
+  const [stickerMargin, setStickerMargin] = useState(65);
+  const [stickerResult, setStickerResult] = useState<any>(null);
+
   useEffect(() => {
     loadDatabaseOptions();
   }, []);
@@ -439,15 +457,19 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       setEquipments(eqs);
       setProducts(prods || []);
 
-      if (mats.fdm.length > 0) setFdmMaterialId(mats.fdm[0].id);
-      if (mats.resin.length > 0) setResinMaterialId(mats.resin[0].id);
-      if (mats.laser.length > 0) setLaserMaterialId(mats.laser[0].id);
+      if (mats.fdm?.length > 0) setFdmMaterialId(mats.fdm[0].id);
+      if (mats.resin?.length > 0) setResinMaterialId(mats.resin[0].id);
+      if (mats.laser?.length > 0) setLaserMaterialId(mats.laser[0].id);
+      if (mats.stickers?.length > 0) setStickerMaterialId(mats.stickers[0].id);
 
       const fdmEq = eqs.find((e: any) => e.type === 'FDM');
       if (fdmEq) setFdmEquipId(fdmEq.id);
 
       const resinEq = eqs.find((e: any) => e.type === 'RESIN');
       if (resinEq) setResinEquipId(resinEq.id);
+
+      const plotterEq = eqs.find((e: any) => e.type === 'PLOTTER');
+      if (plotterEq) setStickerEquipId(plotterEq.id);
     } catch (err) {
       console.error('Erro ao carregar opções da calculadora:', err);
     }
@@ -457,7 +479,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
     setSelectedProduct(prod);
 
     // Identificar processo alvo
-    const validTabs: ('FDM' | 'RESIN' | 'LASER' | 'PINTURA')[] = ['FDM', 'RESIN', 'LASER', 'PINTURA'];
+    const validTabs: ('FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO')[] = ['FDM', 'RESIN', 'LASER', 'PINTURA', 'ADESIVO'];
     const pType = (prod.process_type || 'FDM').toUpperCase() as any;
     const targetTab = validTabs.includes(pType) ? pType : 'FDM';
     setActiveTab(targetTab);
@@ -534,6 +556,21 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       if (params?.varnishType) setPaintVarnish(params.varnishType);
       if (params?.profitMarginPercent != null) setPaintMargin(Number(params.profitMarginPercent));
       else if (prod.margin_percent != null) setPaintMargin(Number(prod.margin_percent));
+    } else if (targetTab === 'ADESIVO') {
+      if (params?.materialId) setStickerMaterialId(params.materialId);
+      else if (prod.material_id) setStickerMaterialId(prod.material_id);
+
+      if (params?.equipmentId) setStickerEquipId(params.equipmentId);
+      else if (prod.equipment_id) setStickerEquipId(prod.equipment_id);
+
+      if (params?.stickerWidthMm != null) setStickerWidthMm(Number(params.stickerWidthMm));
+      if (params?.stickerHeightMm != null) setStickerHeightMm(Number(params.stickerHeightMm));
+      if (params?.quantityTotal != null) setStickerQuantityTotal(Number(params.quantityTotal));
+      if (params?.hasLamination != null) setStickerHasLamination(Boolean(params.hasLamination));
+      if (params?.cutHours != null) setStickerCutHours(Number(params.cutHours));
+      if (params?.laborHours != null) setStickerLaborHours(Number(params.laborHours));
+      if (params?.profitMarginPercent != null) setStickerMargin(Number(params.profitMarginPercent));
+      else if (prod.margin_percent != null) setStickerMargin(Number(prod.margin_percent));
     }
 
     setSaveAsForm({
@@ -565,7 +602,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
     parts: ProductFile[],
     selectedIds: Set<string>,
     prod: Product | null,
-    targetTab: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA'
+    targetTab: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVO'
   ) => {
     if (!prod || parts.length === 0) return;
 
@@ -983,6 +1020,47 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
     calc();
   }, [paintSize, paintPrepHours, paintPaintHours, paintVarnish, paintMargin]);
 
+  // Re-calculate Sticker / Vinyl
+  useEffect(() => {
+    const calc = async () => {
+      try {
+        const res = await api.calculateSticker({
+          materialId: stickerMaterialId,
+          equipmentId: stickerEquipId,
+          sheetWidthMm: stickerSheetWidth,
+          sheetHeightMm: stickerSheetHeight,
+          stickerWidthMm,
+          stickerHeightMm,
+          spacingMm: stickerSpacingMm,
+          marginMm: stickerMarginMm,
+          quantityTotal: stickerQuantityTotal,
+          hasLamination: stickerHasLamination,
+          cutHours: stickerCutHours,
+          laborHours: stickerLaborHours,
+          profitMarginPercent: stickerMargin,
+        });
+        setStickerResult(res);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    calc();
+  }, [
+    stickerMaterialId,
+    stickerEquipId,
+    stickerSheetWidth,
+    stickerSheetHeight,
+    stickerWidthMm,
+    stickerHeightMm,
+    stickerSpacingMm,
+    stickerMarginMm,
+    stickerQuantityTotal,
+    stickerHasLamination,
+    stickerCutHours,
+    stickerLaborHours,
+    stickerMargin,
+  ]);
+
   // Handler to export to Order Modal
   const handleConvertToOrder = () => {
     let item: any = null;
@@ -1069,6 +1147,31 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           ...paintResult,
         },
       };
+    } else if (activeTab === 'ADESIVO' && stickerResult) {
+      const mat = (materials.stickers || []).find((m: any) => m.id === stickerMaterialId);
+      const title = selectedProduct ? selectedProduct.name : `Lote de Adesivos: ${mat?.name || 'Vinil Personalizado'}`;
+      item = {
+        process_type: 'ADESIVO',
+        description: `${title} (${stickerQuantityTotal} un, ${stickerWidthMm}x${stickerHeightMm}mm, ${stickerResult.sheetsNeeded || 1} folhas)`,
+        quantity: 1,
+        material_id: stickerMaterialId,
+        equipment_id: stickerEquipId,
+        unit_cost: stickerResult.totalCost,
+        unit_price: stickerResult.suggestedPrice,
+        product_id: selectedProduct?.id || null,
+        calc_params: {
+          quantity_total: stickerQuantityTotal,
+          width_mm: stickerWidthMm,
+          height_mm: stickerHeightMm,
+          sheetsNeeded: stickerResult.sheetsNeeded,
+          stickersPerSheet: stickerResult.stickersPerSheet,
+          has_lamination: stickerHasLamination,
+          cutHours: stickerCutHours,
+          selected_parts: selectedPartsList,
+          is_partial: isPartialAssembly,
+          ...stickerResult,
+        },
+      };
     }
 
     if (item) {
@@ -1083,7 +1186,9 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       ? resinResult
       : activeTab === 'LASER'
       ? laserResult
-      : paintResult;
+      : activeTab === 'PINTURA'
+      ? paintResult
+      : stickerResult;
 
   return (
     <div className="page-container">
@@ -1573,6 +1678,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           { id: 'RESIN', label: 'Impressão 3D Resina', icon: TestTube, color: 'var(--brand-purple, #8b5cf6)' },
           { id: 'LASER', label: 'Laser & Papelaria', icon: Zap, color: '#f59e0b' },
           { id: 'PINTURA', label: 'Pós-Processamento & Pintura', icon: Paintbrush, color: '#f43f5e' },
+          { id: 'ADESIVO', label: 'Adesivos & Vinil', icon: Tag, color: '#06b6d4' },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1949,6 +2055,312 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
               />
             </div>
           )}
+
+          {activeTab === 'ADESIVO' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)' }}>
+                <Tag size={20} color="#06b6d4" />
+                Parâmetros de Impressão e Recorte de Adesivos
+              </h3>
+
+              {/* Seletor de Insumo / Vinil */}
+              <div className="form-group">
+                <label className="form-label">Mídia / Vinil Adesivo</label>
+                <select
+                  className="form-control"
+                  value={stickerMaterialId}
+                  onChange={e => {
+                    const id = e.target.value;
+                    setStickerMaterialId(id);
+                    const mat = (materials.stickers || []).find((m: any) => m.id === id);
+                    if (mat && mat.sheet_width_mm && mat.sheet_height_mm) {
+                      setStickerSheetWidth(mat.sheet_width_mm);
+                      setStickerSheetHeight(mat.sheet_height_mm);
+                    }
+                  }}
+                >
+                  {(materials.stickers || []).map((m: any) => (
+                    <option key={m.id} value={m.id}>
+                      {m.brand ? `${m.brand} - ` : ''}{m.name} ({m.finish}) — {formatCurrency(m.unit_price)} / {m.unit_type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Seletor de Equipamento (Plotter) */}
+              <div className="form-group">
+                <label className="form-label">Equipamento de Recorte / Impressora</label>
+                <select
+                  className="form-control"
+                  value={stickerEquipId}
+                  onChange={e => setStickerEquipId(e.target.value)}
+                >
+                  <option value="">Nenhum equipamento vinculado</option>
+                  {equipments
+                    .filter((eq: any) => ['PLOTTER', 'STICKER_PRINTER', 'LASER'].includes(eq.type))
+                    .map((eq: any) => (
+                      <option key={eq.id} value={eq.id}>
+                        {eq.name} ({eq.type}) — {formatCurrency(eq.hourly_depreciation)}/h
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Formato da Mídia & Presets de Tamanho */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14 }}>
+                <div className="form-group">
+                  <label className="form-label">Formato da Folha / Mídia</label>
+                  <select
+                    className="form-control"
+                    value={stickerFormat}
+                    onChange={e => {
+                      const fmt = e.target.value as any;
+                      setStickerFormat(fmt);
+                      if (fmt === 'A4') {
+                        setStickerSheetWidth(210);
+                        setStickerSheetHeight(297);
+                      } else if (fmt === 'A3') {
+                        setStickerSheetWidth(297);
+                        setStickerSheetHeight(420);
+                      } else if (fmt === 'METRO') {
+                        setStickerSheetWidth(1000);
+                        setStickerSheetHeight(1000);
+                      }
+                    }}
+                  >
+                    <option value="A4">Folha A4 (210 x 297 mm)</option>
+                    <option value="A3">Folha A3 (297 x 420 mm)</option>
+                    <option value="METRO">Bobina / Metro (1000 x 1000 mm)</option>
+                    <option value="CUSTOM">Personalizado</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Qtd Total Desejada</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control mono"
+                    value={stickerQuantityTotal}
+                    onChange={e => setStickerQuantityTotal(Math.max(1, Number(e.target.value)))}
+                  />
+                </div>
+              </div>
+
+              {/* Dimensões do Adesivo Individual */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label className="form-label" style={{ margin: 0 }}>Dimensões do Adesivo Individual</label>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Presets rápidos:</span>
+                </div>
+
+                {/* Presets Rápidos */}
+                <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                  {[
+                    { label: '5x5 cm (Sticker)', w: 50, h: 50 },
+                    { label: '7x4 cm (Rótulo)', w: 70, h: 40 },
+                    { label: '3x3 cm (Selo)', w: 30, h: 30 },
+                    { label: '10x10 cm (Grande)', w: 100, h: 100 },
+                  ].map(p => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => {
+                        setStickerWidthMm(p.w);
+                        setStickerHeightMm(p.h);
+                      }}
+                      style={{
+                        padding: '4px 9px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        background: stickerWidthMm === p.w && stickerHeightMm === p.h ? 'rgba(6, 182, 212, 0.2)' : 'var(--bg-surface)',
+                        color: stickerWidthMm === p.w && stickerHeightMm === p.h ? '#06b6d4' : 'var(--text-secondary)',
+                        border: stickerWidthMm === p.w && stickerHeightMm === p.h ? '1px solid #06b6d4' : '1px solid var(--border-subtle)',
+                        borderRadius: 6,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Largura (mm)</label>
+                    <input
+                      type="number"
+                      min="5"
+                      className="form-control mono"
+                      value={stickerWidthMm}
+                      onChange={e => setStickerWidthMm(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Altura (mm)</label>
+                    <input
+                      type="number"
+                      min="5"
+                      className="form-control mono"
+                      value={stickerHeightMm}
+                      onChange={e => setStickerHeightMm(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Espaço (mm)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control mono"
+                      value={stickerSpacingMm}
+                      onChange={e => setStickerSpacingMm(Number(e.target.value))}
+                      title="Espaçamento entre adesivos na folha"
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Sangria (mm)</label>
+                    <input
+                      type="number"
+                      min="5"
+                      className="form-control mono"
+                      value={stickerMarginMm}
+                      onChange={e => setStickerMarginMm(Number(e.target.value))}
+                      title="Margem de registro da plotter"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulador Visual de Aproveitamento da Folha */}
+              {stickerResult && (
+                <div
+                  style={{
+                    background: 'var(--bg-surface)',
+                    border: '1px solid rgba(6, 182, 212, 0.3)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '12px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    {/* Miniatura Ilustrativa da Folha */}
+                    <div
+                      style={{
+                        width: 44,
+                        height: 60,
+                        background: '#1e293b',
+                        border: '1.5px dashed #06b6d4',
+                        borderRadius: 4,
+                        padding: 3,
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: 2,
+                        alignContent: 'center',
+                        justifyItems: 'center',
+                        boxShadow: '0 2px 8px rgba(6, 182, 212, 0.15)'
+                      }}
+                      title="Simulação geométrica da folha de corte"
+                    >
+                      {Array.from({ length: Math.min(9, stickerResult.stickersPerSheet || 1) }).map((_, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: '100%',
+                            height: 10,
+                            background: '#06b6d4',
+                            borderRadius: 2,
+                            opacity: 0.85
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {stickerResult.stickersPerSheet} adesivos por folha
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                        Demanda: <strong style={{ color: '#06b6d4' }}>{stickerResult.sheetsNeeded} folhas</strong> para {stickerQuantityTotal} un
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Aproveitamento</div>
+                    <div className="mono" style={{ fontSize: '1.15rem', fontWeight: 800, color: '#06b6d4' }}>
+                      {stickerResult.areaEfficiencyPercent}%
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Opção de Laminação Protetora */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  background: stickerHasLamination ? 'rgba(6, 182, 212, 0.08)' : 'var(--bg-surface)',
+                  border: stickerHasLamination ? '1px solid #06b6d4' : '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setStickerHasLamination(!stickerHasLamination)}
+              >
+                <div>
+                  <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Laminação Protetora UV (BOPP / Cristal)
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                    Película a frio contra riscos, desbotamento solar e água (+ R$ 0,35 / folha)
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={stickerHasLamination}
+                  onChange={e => setStickerHasLamination(e.target.checked)}
+                  style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#06b6d4' }}
+                />
+              </div>
+
+              {/* Tempos de Operação e Acabamento */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Tempo de Corte na Plotter (h)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="form-control mono"
+                    value={stickerCutHours}
+                    onChange={e => setStickerCutHours(Number(e.target.value))}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Depilação & Acabamento (h)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="form-control mono"
+                    value={stickerLaborHours}
+                    onChange={e => setStickerLaborHours(Number(e.target.value))}
+                    title="Tempo de destacar, refilar e aplicar máscara de transferência"
+                  />
+                </div>
+              </div>
+
+              <ProfitMarginControl
+                marginPercent={stickerMargin}
+                onChangeMargin={setStickerMargin}
+                totalCost={stickerResult?.totalCost || 0}
+                accentColor="#06b6d4"
+                tabLabel="Adesivos"
+              />
+            </div>
+          )}
           </div>
         </div>
 
@@ -1980,22 +2392,39 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                 {/* Highlight Big Price Card */}
                 <div
                   style={{
-                    background: 'linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 12%, transparent) 0%, rgba(6, 182, 212, 0.08) 100%)',
-                    border: '1px solid color-mix(in srgb, var(--brand-primary) 35%, transparent)',
+                    background: activeTab === 'ADESIVO' 
+                      ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%)'
+                      : 'linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 12%, transparent) 0%, rgba(6, 182, 212, 0.08) 100%)',
+                    border: activeTab === 'ADESIVO'
+                      ? '1px solid rgba(6, 182, 212, 0.4)'
+                      : '1px solid color-mix(in srgb, var(--brand-primary) 35%, transparent)',
                     borderRadius: 'var(--radius-lg)',
                     padding: '20px',
                     textAlign: 'center',
                   }}
                 >
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
-                    Preço de Venda Sugerido
+                    {activeTab === 'ADESIVO' ? 'Preço Total da Tiragem' : 'Preço de Venda Sugerido'}
                   </div>
-                  <div className="mono" style={{ fontSize: '2.3rem', fontWeight: 900, color: 'var(--brand-primary)', margin: '4px 0' }}>
+                  <div className="mono" style={{ fontSize: '2.3rem', fontWeight: 900, color: activeTab === 'ADESIVO' ? '#06b6d4' : 'var(--brand-primary)', margin: '4px 0' }}>
                     {formatCurrency(currentResult.suggestedPrice)}
                   </div>
+
+                  {activeTab === 'ADESIVO' && currentResult.unitPrice !== undefined && (
+                    <div style={{ margin: '6px 0 10px', background: 'rgba(6, 182, 212, 0.12)', padding: '6px 12px', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Preço Unitário:</span>
+                      <strong className="mono" style={{ fontSize: '1.1rem', color: '#06b6d4' }}>
+                        {formatCurrency(currentResult.unitPrice)} / un
+                      </strong>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                        (Custo: {formatCurrency(currentResult.unitCost)}/un)
+                      </span>
+                    </div>
+                  )}
+
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <span>Lucro Bruto:</span>
-                    <strong style={{ color: 'var(--brand-primary)' }}>+{formatCurrency(currentResult.marginAmount)}</strong>
+                    <strong style={{ color: activeTab === 'ADESIVO' ? '#06b6d4' : 'var(--brand-primary)' }}>+{formatCurrency(currentResult.marginAmount)}</strong>
                     <span>({currentResult.marginPercent}%)</span>
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6, borderTop: '1px dashed color-mix(in srgb, var(--brand-primary) 20%, transparent)', paddingTop: 6 }}>
@@ -2023,6 +2452,27 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                     </div>
                   )}
 
+                  {currentResult.mediaCost !== undefined && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Mídia / Vinil Adesivo ({currentResult.sheetsNeeded} fls):</span>
+                      <strong className="mono">{formatCurrency(currentResult.mediaCost)}</strong>
+                    </div>
+                  )}
+
+                  {currentResult.inkCost !== undefined && currentResult.inkCost > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Impressão & Tinta:</span>
+                      <strong className="mono">{formatCurrency(currentResult.inkCost)}</strong>
+                    </div>
+                  )}
+
+                  {currentResult.laminationCost !== undefined && currentResult.laminationCost > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Película de Laminação UV:</span>
+                      <strong className="mono">{formatCurrency(currentResult.laminationCost)}</strong>
+                    </div>
+                  )}
+
                   {currentResult.washCureCost !== undefined && (
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Lavagem/Cura (Álcool + FEP):</span>
@@ -2032,7 +2482,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
 
                   {currentResult.paperCost !== undefined && (
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Mídia / Folhas:</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>Mídia / Folhas Laser:</span>
                       <strong className="mono">{formatCurrency(currentResult.paperCost)}</strong>
                     </div>
                   )}
@@ -2076,6 +2526,13 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Insumos (Primer, Tintas, Verniz):</span>
                       <strong className="mono">{formatCurrency(currentResult.consumablesCost)}</strong>
+                    </div>
+                  )}
+
+                  {currentResult.laborCost !== undefined && currentResult.laborCost > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Mão de Obra (Depilação / Acabamento):</span>
+                      <strong className="mono">{formatCurrency(currentResult.laborCost)}</strong>
                     </div>
                   )}
 

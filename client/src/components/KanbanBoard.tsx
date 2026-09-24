@@ -22,14 +22,14 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS: { id: OrderStatus; label: string; icon: any; color: string }[] = [
-  { id: 'ORCAMENTO', label: 'Orçamento', icon: FileText, color: '#94a3b8' },
-  { id: 'APROVADO', label: 'Aprovado', icon: CheckCircle, color: '#3b82f6' },
-  { id: 'EM_IMPRESSAO', label: 'Em Impressão', icon: Printer, color: '#10b981' },
-  { id: 'EM_PREPARACAO', label: 'Preparação / Pós', icon: Wrench, color: '#f59e0b' },
-  { id: 'EM_PINTURA', label: 'Em Pintura', icon: Paintbrush, color: '#a855f7' },
-  { id: 'SECAGEM_VERNIZ', label: 'Secagem / Verniz', icon: Wind, color: '#06b6d4' },
-  { id: 'PRONTO', label: 'Pronto Retirada', icon: PackageCheck, color: '#22c55e' },
-  { id: 'ENTREGUE', label: 'Entregue / Concluído', icon: CheckCheck, color: '#64748b' },
+  { id: 'ORCAMENTO', label: 'Orçamento', icon: FileText, color: 'var(--status-orcamento, #94a3b8)' },
+  { id: 'APROVADO', label: 'Aprovado', icon: CheckCircle, color: 'var(--status-aprovado, #3b82f6)' },
+  { id: 'EM_IMPRESSAO', label: 'Em Impressão', icon: Printer, color: 'var(--status-em_impressao, var(--brand-primary, #10b981))' },
+  { id: 'EM_PREPARACAO', label: 'Preparação / Pós', icon: Wrench, color: 'var(--status-em_preparacao, #f59e0b)' },
+  { id: 'EM_PINTURA', label: 'Em Pintura', icon: Paintbrush, color: 'var(--status-em_pintura, #a855f7)' },
+  { id: 'SECAGEM_VERNIZ', label: 'Secagem / Verniz', icon: Wind, color: 'var(--status-secagem_verniz, #06b6d4)' },
+  { id: 'PRONTO', label: 'Pronto Retirada', icon: PackageCheck, color: 'var(--status-pronto, #22c55e)' },
+  { id: 'ENTREGUE', label: 'Entregue / Concluído', icon: CheckCheck, color: 'var(--status-entregue, #64748b)' },
 ];
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
@@ -83,7 +83,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               '--col-accent': col.color,
               borderColor: isTarget ? col.color : undefined,
               background: isTarget
-                ? `color-mix(in srgb, ${col.color} 8%, rgba(13, 19, 32, 0.85))`
+                ? `color-mix(in srgb, ${col.color} 14%, var(--bg-surface-elevated))`
                 : undefined,
               transition: 'all 0.2s ease',
             } as React.CSSProperties}
@@ -112,7 +112,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   {col.label}
                 </span>
                 <span style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
+                  background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)',
                   padding: '1px 6px',
                   borderRadius: 'var(--radius-full)',
                   fontSize: '0.7rem',
@@ -136,8 +136,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   textAlign: 'center',
                   color: 'var(--text-muted)',
                   fontSize: '0.78rem',
-                  border: '1px dashed rgba(255, 255, 255, 0.06)',
+                  border: '1px dashed var(--border-subtle)',
                   borderRadius: 'var(--radius-md)',
+                  background: 'color-mix(in srgb, var(--bg-surface) 40%, transparent)',
                   margin: 'auto 0'
                 }}>
                   Nenhum pedido nesta etapa
@@ -205,7 +206,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
                       {/* Footer: Prices and Down Payment */}
                       <div style={{
-                        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                        borderTop: '1px solid var(--border-subtle)',
                         paddingTop: 8,
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -220,8 +221,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
                         {order.down_payment > 0 ? (
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.65rem', color: '#10b981' }}>SINAL PAGO</div>
-                            <div className="mono" style={{ fontSize: '0.75rem', color: '#34d399' }}>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--brand-primary)' }}>SINAL PAGO</div>
+                            <div className="mono" style={{ fontSize: '0.75rem', color: 'color-mix(in srgb, var(--brand-primary) 80%, var(--text-primary))' }}>
                               {formatCurrency(order.down_payment)}
                             </div>
                           </div>

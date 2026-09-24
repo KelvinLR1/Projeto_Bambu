@@ -35,14 +35,14 @@
   --accent-emerald: #10b981;
 
   /* Status Colors */
-  --status-orcamento: #64748b;
+  --status-orcamento: #94a3b8;
   --status-aprovado: #3b82f6;
-  --status-em_impressao: #10b981;
+  --status-em_impressao: var(--brand-primary);
   --status-em_preparacao: #f59e0b;
-  --status-em_pintura: #8b5cf6;
+  --status-em_pintura: #a855f7;
   --status-secagem_verniz: #06b6d4;
   --status-pronto: #22c55e;
-  --status-entregue: #475569;
+  --status-entregue: #64748b;
   --status-cancelado: #ef4444;
 
   --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.4);
@@ -65,6 +65,8 @@
 }
 
 html {
+  zoom: 0.85;
+  height: 100%;
   scrollbar-gutter: stable;
   overflow-y: scroll;
 }
@@ -73,7 +75,7 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: calc(100vh / 0.85);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -566,6 +568,10 @@ select option:checked {
 .process-RESIN { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
 .process-LASER { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
 .process-PINTURA { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+.process-ADESIVO { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+.process-PLOTTER { background: rgba(14, 165, 233, 0.2); color: #38bdf8; }
+.process-STICKER_PRINTER { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+.process-LAMINATOR { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
 .process-COMBO { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 
 /* Modals */
@@ -656,20 +662,22 @@ select option:checked {
   display: flex;
   gap: 14px;
   overflow-x: auto;
-  padding-bottom: 24px;
-  min-height: calc(100vh - 190px);
+  padding-bottom: 20px;
+  flex: 1;
+  min-height: calc(100vh / 0.85 - 165px);
 }
 
 .kanban-column {
   flex: 0 0 300px;
-  background: rgba(13, 19, 32, 0.72);
+  background: color-mix(in srgb, var(--bg-surface-elevated) 70%, var(--bg-surface));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 200px);
+  height: calc(100vh / 0.85 - 165px);
+  max-height: calc(100vh / 0.85 - 165px);
   overflow: hidden;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
@@ -680,13 +688,13 @@ select option:checked {
   display: block;
   height: 3px;
   width: 100%;
-  background: var(--col-accent, rgba(255,255,255,0.1));
+  background: var(--col-accent, var(--brand-primary));
   flex-shrink: 0;
 }
 
 .kanban-column:hover {
-  border-color: color-mix(in srgb, var(--col-accent, rgba(255,255,255,0.1)) 40%, var(--border-subtle));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--col-accent, transparent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--col-accent, var(--brand-primary)) 40%, var(--border-subtle));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--col-accent, var(--brand-primary)) 20%, transparent);
 }
 
 .kanban-header {
@@ -696,6 +704,7 @@ select option:checked {
   box-sizing: border-box;
   padding: 8px 14px;
   border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -723,17 +732,17 @@ select option:checked {
   background: transparent;
 }
 .kanban-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--text-primary) 15%, transparent);
   border-radius: var(--radius-full);
 }
 .kanban-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.24);
+  background: color-mix(in srgb, var(--text-primary) 28%, transparent);
 }
 
 .kanban-card {
   flex-shrink: 0;
-  background: rgba(16, 24, 42, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card, var(--border-subtle));
   border-radius: var(--radius-md);
   padding: 13px;
   cursor: grab;
@@ -741,6 +750,7 @@ select option:checked {
   user-select: none;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* Subtle left accent strip on cards */
@@ -751,17 +761,17 @@ select option:checked {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--col-accent, rgba(255,255,255,0.12));
+  background: var(--col-accent, var(--brand-primary));
   border-radius: 3px 0 0 3px;
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 0.2s ease;
 }
 
 .kanban-card:hover {
   transform: translateY(-2px);
-  background: rgba(20, 30, 52, 0.95);
-  border-color: color-mix(in srgb, var(--col-accent, rgba(255,255,255,0.2)) 50%, rgba(255,255,255,0.1));
-  box-shadow: var(--shadow-md), 0 0 20px -6px color-mix(in srgb, var(--col-accent, transparent) 35%, transparent);
+  background: var(--bg-surface-hover);
+  border-color: color-mix(in srgb, var(--col-accent, var(--brand-primary)) 45%, var(--border-subtle));
+  box-shadow: var(--shadow-md), 0 0 20px -6px color-mix(in srgb, var(--col-accent, var(--brand-primary)) 30%, transparent);
 }
 
 .kanban-card:hover::before {
@@ -771,23 +781,6 @@ select option:checked {
 .kanban-card.is-dragging {
   opacity: 0.4;
   cursor: grabbing;
-}
-
-/* Light mode adaptations for Kanban */
-[data-theme-mode="light"] .kanban-column {
-  background: rgba(241, 245, 249, 0.85);
-  border-color: rgba(0,0,0,0.08);
-}
-[data-theme-mode="light"] .kanban-header {
-  border-bottom-color: rgba(0,0,0,0.07);
-}
-[data-theme-mode="light"] .kanban-card {
-  background: #ffffff;
-  border-color: rgba(0,0,0,0.08);
-}
-[data-theme-mode="light"] .kanban-card:hover {
-  background: #f8fafc;
-  border-color: color-mix(in srgb, var(--col-accent, rgba(0,0,0,0.15)) 60%, rgba(0,0,0,0.08));
 }
 
 /* Tables */
@@ -1161,7 +1154,7 @@ select option:checked {
 /* App Shell Layout (Sidebar + Main Viewport) */
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100vh / 0.85);
   width: 100%;
   position: relative;
   background-color: var(--bg-main);
@@ -1170,7 +1163,7 @@ select option:checked {
 .app-main-content {
   flex: 1;
   min-width: 0;
-  min-height: 100vh;
+  min-height: calc(100vh / 0.85);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1181,6 +1174,8 @@ select option:checked {
 .page-container {
   width: 100%;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 24px 28px 40px;
   box-sizing: border-box;
   transition: padding 0.24s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1223,7 +1218,7 @@ select option:checked {
   flex-direction: column;
   flex: 1;
   width: 100%;
-  min-height: 100vh;
+  min-height: calc(100vh / 0.85);
   will-change: opacity, transform;
 }
 

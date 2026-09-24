@@ -39,6 +39,7 @@ export function runSeed() {
     DELETE FROM products;
     DELETE FROM equipment_maintenances;
     DELETE FROM equipments;
+    DELETE FROM materials_stickers;
     DELETE FROM materials_finishing;
     DELETE FROM materials_laser;
     DELETE FROM materials_resin;
@@ -168,11 +169,41 @@ export function runSeed() {
     notes: 'Agulha e bico 0.35mm. Compressor com tanque de 3L e filtro de umidade.',
   };
 
+  const equipPlotter = {
+    id: uuidv4(),
+    name: 'Plotter de Recorte Silhouette Cameo 4',
+    type: 'PLOTTER',
+    power_watts: 60,
+    purchase_cost: 2800,
+    lifespan_hours: 4000,
+    hourly_depreciation: 1.10,
+    maintenance_interval_hours: 150,
+    total_hours: 88,
+    hours_since_last_maint: 18,
+    status: 'ATIVO',
+    notes: 'Lâmina auto-ajustável instalada. Base de corte de 30x30cm e rolete para bobinas.',
+  };
+
+  const equipLaminator = {
+    id: uuidv4(),
+    name: 'Laminadora Térmica & Frio Mimo Pro',
+    type: 'LAMINATOR',
+    power_watts: 350,
+    purchase_cost: 950,
+    lifespan_hours: 3000,
+    hourly_depreciation: 0.60,
+    maintenance_interval_hours: 200,
+    total_hours: 25,
+    hours_since_last_maint: 25,
+    status: 'ATIVO',
+    notes: 'Ajuste de temperatura digital para BOPP fosco/brilho e aplicação a frio.',
+  };
+
   const insertEquip = db.prepare(`
     INSERT INTO equipments (id, name, type, power_watts, purchase_cost, lifespan_hours, hourly_depreciation, maintenance_interval_hours, total_hours, hours_since_last_maint, status, notes)
     VALUES (@id, @name, @type, @power_watts, @purchase_cost, @lifespan_hours, @hourly_depreciation, @maintenance_interval_hours, @total_hours, @hours_since_last_maint, @status, @notes)
   `);
-  [equipX1C, equipK1, equipSaturn, equipLaser, equipAirbrush].forEach(e => insertEquip.run(e));
+  [equipX1C, equipK1, equipSaturn, equipLaser, equipAirbrush, equipPlotter, equipLaminator].forEach(e => insertEquip.run(e));
 
   // Insumos FDM
   const fdmMaterials = [
@@ -437,6 +468,119 @@ export function runSeed() {
     VALUES (@id, @name, @category, @brand, @unit_type, @cost_per_unit, @stock_qty, @min_stock_qty, @active)
   `);
   finishingMaterials.forEach(m => insertFinishing.run(m));
+
+  // Insumos de Adesivos e Vinil
+  const stickerMaterials = [
+    {
+      id: uuidv4(),
+      name: 'Vinil Adesivo Branco Brilho Premium',
+      brand: 'Imprimax Digimax',
+      finish: 'BRILHO',
+      unit_type: 'FOLHA_A4',
+      sheet_width_mm: 210,
+      sheet_height_mm: 297,
+      unit_price: 2.20,
+      ink_cost_per_unit: 0.50,
+      lamination_cost_per_unit: 0.35,
+      color_hex: '#ffffff',
+      stock_qty: 120,
+      min_stock_qty: 30,
+      active: 1
+    },
+    {
+      id: uuidv4(),
+      name: 'Vinil Adesivo Holográfico Rainbow Efeito Arco-íris',
+      brand: 'Alltak Tuning',
+      finish: 'HOLOGRAFICO',
+      unit_type: 'FOLHA_A4',
+      sheet_width_mm: 210,
+      sheet_height_mm: 297,
+      unit_price: 4.80,
+      ink_cost_per_unit: 0.60,
+      lamination_cost_per_unit: 0.40,
+      color_hex: '#a855f7',
+      stock_qty: 18, // ALERTA: Próximo do mínimo
+      min_stock_qty: 20,
+      active: 1
+    },
+    {
+      id: uuidv4(),
+      name: 'Vinil Adesivo Transparente Cristal',
+      brand: 'Oracal 651',
+      finish: 'TRANSPARENTE',
+      unit_type: 'FOLHA_A4',
+      sheet_width_mm: 210,
+      sheet_height_mm: 297,
+      unit_price: 3.10,
+      ink_cost_per_unit: 0.50,
+      lamination_cost_per_unit: 0.35,
+      color_hex: '#38bdf8',
+      stock_qty: 45,
+      min_stock_qty: 15,
+      active: 1
+    },
+    {
+      id: uuidv4(),
+      name: 'Papel Fotográfico Adesivo Glossy Resistente à Água 135g',
+      brand: 'Mimo Paper',
+      finish: 'BRILHO',
+      unit_type: 'FOLHA_A4',
+      sheet_width_mm: 210,
+      sheet_height_mm: 297,
+      unit_price: 1.40,
+      ink_cost_per_unit: 0.45,
+      lamination_cost_per_unit: 0.30,
+      color_hex: '#f8fafc',
+      stock_qty: 90,
+      min_stock_qty: 25,
+      active: 1
+    },
+    {
+      id: uuidv4(),
+      name: 'Vinil Preto Fosco Black Piano (Plotter Recorte)',
+      brand: 'Alltak Ultra',
+      finish: 'FOSCO',
+      unit_type: 'METRO_LINEAR',
+      sheet_width_mm: 1000,
+      sheet_height_mm: 1000,
+      unit_price: 18.50,
+      ink_cost_per_unit: 0.00, // Apenas recorte
+      lamination_cost_per_unit: 0.00,
+      color_hex: '#1e293b',
+      stock_qty: 12,
+      min_stock_qty: 3,
+      active: 1
+    },
+    {
+      id: uuidv4(),
+      name: 'Película de Laminação a Frio BOPP Protetora UV',
+      brand: 'Mimo Pro',
+      finish: 'BRILHO',
+      unit_type: 'FOLHA_A4',
+      sheet_width_mm: 210,
+      sheet_height_mm: 297,
+      unit_price: 0.70,
+      ink_cost_per_unit: 0.00,
+      lamination_cost_per_unit: 0.00,
+      color_hex: '#e2e8f0',
+      stock_qty: 85,
+      min_stock_qty: 20,
+      active: 1
+    }
+  ];
+
+  const insertSticker = db.prepare(`
+    INSERT INTO materials_stickers (
+      id, name, brand, finish, unit_type, sheet_width_mm, sheet_height_mm,
+      unit_price, ink_cost_per_unit, lamination_cost_per_unit, color_hex,
+      stock_qty, min_stock_qty, active
+    ) VALUES (
+      @id, @name, @brand, @finish, @unit_type, @sheet_width_mm, @sheet_height_mm,
+      @unit_price, @ink_cost_per_unit, @lamination_cost_per_unit, @color_hex,
+      @stock_qty, @min_stock_qty, @active
+    )
+  `);
+  stickerMaterials.forEach(m => insertSticker.run(m));
 
   // Manutenções Anteriores
   const maintenances = [
@@ -1023,6 +1167,20 @@ export function runSeed() {
       unit_price: 98.00,
       margin_percent: 72,
       image_url: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=400&q=80',
+    },
+    {
+      id: uuidv4(),
+      sku: 'PRD-STK-HOLO',
+      name: 'Pack 100 Adesivos Vinil Holográfico 5x5cm Die-Cut',
+      category: 'Papelaria & Brindes',
+      process_type: 'ADESIVO',
+      description: 'Lote de 100 stickers em vinil holográfico premium com proteção UV a frio, corte de contorno personalizado na plotter e máscara protetora.',
+      production_time_hours: 0.5,
+      weight_g: 50,
+      unit_cost: 24.80,
+      unit_price: 89.90,
+      margin_percent: 72,
+      image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=400&q=80',
     },
     {
       id: uuidv4(),

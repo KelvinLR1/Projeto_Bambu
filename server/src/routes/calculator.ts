@@ -4,7 +4,8 @@ import {
   calculateFdmCost,
   calculateResinCost,
   calculateLaserCost,
-  calculatePaintingCost
+  calculatePaintingCost,
+  calculateStickerCost
 } from '../services/costCalculator.js';
 
 const router = Router();
@@ -192,6 +193,82 @@ router.post('/painting', (req, res) => {
       consumablesCost: consumablesCost !== undefined ? Number(consumablesCost) : undefined,
       equipmentDepreciation: 10,
       profitMarginPercent: Number(profitMarginPercent) || 70
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST calculate Stickers / Vinil
+router.post('/sticker', (req, res) => {
+  try {
+    const settings = getSettingsMap();
+    const {
+      materialId,
+      equipmentId,
+      sheetWidthMm = 210,
+      sheetHeightMm = 297,
+      stickerWidthMm = 50,
+      stickerHeightMm = 50,
+      spacingMm = 3,
+      marginMm = 10,
+      quantityTotal = 50,
+      hasLamination = false,
+      cutHours = 0.25,
+      laborHours = 0.25,
+      profitMarginPercent = settings.default_profit_margin || 65
+    } = req.body;
+
+    let sheetPrice = 2.50;
+    let inkCostPerSheet = 0.50;
+    let laminationCostPerSheet = 0.35;
+    let customSheetWidth = Number(sheetWidthMm) || 210;
+    let customSheetHeight = Number(sheetHeightMm) || 297;
+
+    if (materialId) {
+      const mat = db.prepare(`SELECT * FROM materials_stickers WHERE id = ?`).get(materialId) as any;
+      if (mat) {
+        sheetPrice = mat.unit_price;
+        inkCostPerSheet = mat.ink_cost_per_unit ?? 0.50;
+        laminationCostPerSheet = mat.lamination_cost_per_unit ?? 0.35;
+        if (mat.sheet_width_mm && mat.sheet_height_mm) {
+          customSheetWidth = mat.sheet_width_mm;
+          customSheetHeight = mat.sheet_height_mm;
+        }
+      }
+    }
+
+    let powerWatts = 60;
+    let plotterHourlyDepreciation = 1.20;
+    if (equipmentId) {
+      const eq = db.prepare(`SELECT power_watts, hourly_depreciation FROM equipments WHERE id = ?`).get(equipmentId) as any;
+      if (eq) {
+        powerWatts = eq.power_watts || 60;
+        plotterHourlyDepreciation = eq.hourly_depreciation || 1.20;
+      }
+    }
+
+    const result = calculateStickerCost({
+      sheetPrice,
+      sheetWidthMm: customSheetWidth,
+      sheetHeightMm: customSheetHeight,
+      stickerWidthMm: Number(stickerWidthMm) || 50,
+      stickerHeightMm: Number(stickerHeightMm) || 50,
+      spacingMm: Number(spacingMm) || 3,
+      marginMm: Number(marginMm) || 10,
+      quantityTotal: Number(quantityTotal) || 50,
+      inkCostPerSheet,
+      hasLamination: Boolean(hasLamination),
+      laminationCostPerSheet,
+      cutHours: Number(cutHours) || 0.25,
+      powerWatts,
+      kwhCost: Number(settings.kwh_cost) || 0.92,
+      plotterHourlyDepreciation,
+      laborHours: Number(laborHours) || 0.25,
+      laborRateHour: Number(settings.print_operator_rate_hour) || 25,
+      profitMarginPercent: Number(profitMarginPercent) || 65
     });
 
     res.json(result);

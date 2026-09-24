@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         style={{
           width: sidebarWidth,
           minWidth: sidebarWidth,
-          height: '100vh',
+          height: 'calc(100vh / 0.85)',
           position: 'fixed',
           top: 0,
           left: 0,

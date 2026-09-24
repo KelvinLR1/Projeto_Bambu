@@ -86,8 +86,8 @@ const getMaterialVisualTheme = (rawHex?: string, isLow?: boolean) => {
 };
 
 export const StockPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'REFUGOS'>('FDM');
-  const [data, setData] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [], alerts: [], summary: {} });
+  const [activeTab, setActiveTab] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVOS' | 'REFUGOS'>('FDM');
+  const [data, setData] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [], stickers: [], alerts: [], summary: {} });
   const [failuresData, setFailuresData] = useState<any>({ failures: [], stats: {}, topReasons: [] });
   const [equipments, setEquipments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +113,7 @@ export const StockPage: React.FC = () => {
 
   // Modal: Create / Edit Material
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [materialModalType, setMaterialModalType] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA'>('FDM');
+  const [materialModalType, setMaterialModalType] = useState<'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVOS'>('FDM');
   const [editingMaterial, setEditingMaterial] = useState<any | null>(null);
   const [materialForm, setMaterialForm] = useState<any>({});
 
@@ -235,7 +235,7 @@ export const StockPage: React.FC = () => {
   };
 
   // Open Material Modal
-  const handleOpenMaterialModal = (type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA', item?: any) => {
+  const handleOpenMaterialModal = (type: 'FDM' | 'RESIN' | 'LASER' | 'PINTURA' | 'ADESIVOS', item?: any) => {
     setMaterialModalType(type);
     setEditingMaterial(item || null);
 
@@ -279,6 +279,21 @@ export const StockPage: React.FC = () => {
           min_stock_sheets: 30,
           toner_cost_per_page: 0.35,
         });
+      } else if (type === 'ADESIVOS') {
+        setMaterialForm({
+          name: '',
+          brand: 'Imprimax',
+          finish: 'BRILHO',
+          unit_type: 'FOLHA_A4',
+          sheet_width_mm: 210,
+          sheet_height_mm: 297,
+          unit_price: 2.20,
+          ink_cost_per_unit: 0.50,
+          lamination_cost_per_unit: 0.35,
+          color_hex: '#3b82f6',
+          stock_qty: 50,
+          min_stock_qty: 15,
+        });
       } else {
         setMaterialForm({
           name: '',
@@ -321,6 +336,14 @@ export const StockPage: React.FC = () => {
           await api.createMaterialLaser(materialForm);
           showToast('Mídia adicionada ao estoque!');
         }
+      } else if (materialModalType === 'ADESIVOS') {
+        if (editingMaterial) {
+          await api.updateMaterialSticker(editingMaterial.id, materialForm);
+          showToast('Insumo de adesivo atualizado!');
+        } else {
+          await api.createMaterialSticker(materialForm);
+          showToast('Adesivo adicionado ao estoque!');
+        }
       } else {
         if (editingMaterial) {
           await api.updateMaterialFinishing(editingMaterial.id, materialForm);
@@ -344,6 +367,7 @@ export const StockPage: React.FC = () => {
       if (type === 'FDM') await api.deleteMaterialFdm(id);
       else if (type === 'RESIN') await api.deleteMaterialResin(id);
       else if (type === 'LASER') await api.deleteMaterialLaser(id);
+      else if (type === 'ADESIVOS') await api.deleteMaterialSticker(id);
       else await api.deleteMaterialFinishing(id);
 
       showToast(`Item "${name}" removido.`);
@@ -417,6 +441,19 @@ export const StockPage: React.FC = () => {
     });
   }, [data.finishing, searchTerm, statusFilter]);
 
+  const filteredStickers = useMemo(() => {
+    return (data.stickers || []).filter((item: any) => {
+      const match =
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.brand && item.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.finish && item.finish.toLowerCase().includes(searchTerm.toLowerCase()));
+      const isCritical = item.stock_qty <= item.min_stock_qty;
+      if (statusFilter === 'CRITICAL') return match && isCritical;
+      if (statusFilter === 'HEALTHY') return match && !isCritical;
+      return match;
+    });
+  }, [data.stickers, searchTerm, statusFilter]);
+
   const filteredFailures = useMemo(() => {
     return (failuresData.failures || []).filter((f: any) => {
       const matchSearch =
@@ -432,8 +469,9 @@ export const StockPage: React.FC = () => {
     if (activeTab === 'RESIN') return filteredResin.length;
     if (activeTab === 'LASER') return filteredLaser.length;
     if (activeTab === 'PINTURA') return filteredFinishing.length;
+    if (activeTab === 'ADESIVOS') return filteredStickers.length;
     return filteredFailures.length;
-  }, [activeTab, filteredFdm, filteredResin, filteredLaser, filteredFinishing, filteredFailures]);
+  }, [activeTab, filteredFdm, filteredResin, filteredLaser, filteredFinishing, filteredStickers, filteredFailures]);
 
   return (
     <div className="page-container">
@@ -538,7 +576,7 @@ export const StockPage: React.FC = () => {
             {formatCurrency(data.summary?.totalStockValue || 0)}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-            {(data.fdm?.length || 0) + (data.resin?.length || 0) + (data.laser?.length || 0) + (data.finishing?.length || 0)} insumos cadastrados
+            {(data.fdm?.length || 0) + (data.resin?.length || 0) + (data.laser?.length || 0) + (data.finishing?.length || 0) + (data.stickers?.length || 0)} insumos cadastrados
           </div>
         </div>
 
@@ -602,6 +640,7 @@ export const StockPage: React.FC = () => {
             { id: 'RESIN', label: 'Resinas 3D', count: data.resin?.length || 0, icon: <Droplet size={14} /> },
             { id: 'LASER', label: 'Mídias Laser', count: data.laser?.length || 0, icon: <FileText size={14} /> },
             { id: 'PINTURA', label: 'Insumos Pintura', count: data.finishing?.length || 0, icon: <Palette size={14} /> },
+            { id: 'ADESIVOS', label: 'Adesivos & Vinil', count: data.stickers?.length || 0, icon: <Sparkles size={14} /> },
             { id: 'REFUGOS', label: 'Histórico de Refugos', count: failuresData.failures?.length || 0, icon: <ShieldAlert size={14} />, danger: true },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
@@ -1473,7 +1512,98 @@ export const StockPage: React.FC = () => {
       )}
 
       {/* ==========================================
-          TAB 5: REFUGOS & FALHAS
+          TAB 5: ADESIVOS & VINIL
+      ========================================== */}
+      {activeTab === 'ADESIVOS' && activeCount > 0 && (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Adesivo / Vinil</th>
+                <th>Acabamento</th>
+                <th>Formato / Unidade</th>
+                <th>Preço Unit.</th>
+                <th>Custo Tinta</th>
+                <th>Estoque Atual</th>
+                <th>Estoque Mín.</th>
+                <th>Valor Total</th>
+                <th style={{ textAlign: 'right' }}>Ações Rápidas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStickers.map((s: any) => {
+                const isLow = s.stock_qty <= s.min_stock_qty;
+                const stockVal = s.stock_qty * s.unit_price;
+                const unitLabel = s.unit_type.toLowerCase().includes('folha') ? 'folhas' : 'm';
+
+                return (
+                  <tr key={s.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div
+                          style={{
+                            width: 14,
+                            height: 14,
+                            borderRadius: '50%',
+                            background: s.color_hex || '#3b82f6',
+                            border: '1px solid rgba(255,255,255,0.4)',
+                            boxShadow: '0 0 8px ' + (s.color_hex || '#3b82f6') + '66'
+                          }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{s.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.brand || 'Genérico'}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`process-tag process-ADESIVO`} style={{ fontSize: '0.72rem' }}>
+                        {s.finish}
+                      </span>
+                    </td>
+                    <td>{s.unit_type.replace('_', ' ')}</td>
+                    <td className="mono">{formatCurrency(s.unit_price)}</td>
+                    <td className="mono" style={{ color: 'var(--text-secondary)' }}>{formatCurrency(s.ink_cost_per_unit || 0)}</td>
+                    <td className="mono" style={{ fontWeight: 800, color: isLow ? '#f87171' : 'var(--text-primary)' }}>
+                      {s.stock_qty} {unitLabel}
+                    </td>
+                    <td className="mono" style={{ color: 'var(--text-muted)' }}>{s.min_stock_qty} {unitLabel}</td>
+                    <td className="mono" style={{ color: 'var(--brand-primary)', fontWeight: 600 }}>{formatCurrency(stockVal)}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleQuickAdjust('materials_stickers', s.id, 20, s.name)}
+                          style={{ fontSize: '0.72rem', padding: '3px 8px' }}
+                        >
+                          +20 {unitLabel}
+                        </button>
+                        <button
+                          onClick={() => handleOpenMaterialModal('ADESIVOS', s)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                          title="Editar"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMaterial('ADESIVOS', s.id, s.name)}
+                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4 }}
+                          title="Excluir"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ==========================================
+          TAB 6: REFUGOS & FALHAS
       ========================================== */}
       {activeTab === 'REFUGOS' && (
         <div>
@@ -1905,6 +2035,148 @@ export const StockPage: React.FC = () => {
                       />
                     </div>
                   </div>
+                )}
+
+                {materialModalType === 'ADESIVOS' && (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12 }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Nome do Adesivo / Vinil</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Ex: Vinil Adesivo Branco Brilho..."
+                          value={materialForm.name || ''}
+                          onChange={(e) => setMaterialForm({ ...materialForm, name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Marca</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Ex: Imprimax, Alltak..."
+                          value={materialForm.brand || ''}
+                          onChange={(e) => setMaterialForm({ ...materialForm, brand: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Acabamento</label>
+                        <select
+                          className="form-control"
+                          value={materialForm.finish || 'BRILHO'}
+                          onChange={(e) => setMaterialForm({ ...materialForm, finish: e.target.value })}
+                        >
+                          <option value="BRILHO">Brilho</option>
+                          <option value="FOSCO">Fosco</option>
+                          <option value="HOLOGRAFICO">Holográfico</option>
+                          <option value="TRANSPARENTE">Transparente</option>
+                          <option value="METALICO">Metálico</option>
+                          <option value="REFLETIVO">Refletivo</option>
+                          <option value="KRAFT">Kraft</option>
+                        </select>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Formato / Unidade</label>
+                        <select
+                          className="form-control"
+                          value={materialForm.unit_type || 'FOLHA_A4'}
+                          onChange={(e) => {
+                            const u = e.target.value;
+                            const w = u === 'FOLHA_A3' ? 297 : u === 'METRO_LINEAR' ? 1000 : 210;
+                            const h = u === 'FOLHA_A3' ? 420 : u === 'METRO_LINEAR' ? 1000 : 297;
+                            setMaterialForm({ ...materialForm, unit_type: u, sheet_width_mm: w, sheet_height_mm: h });
+                          }}
+                        >
+                          <option value="FOLHA_A4">Folha A4 (210x297mm)</option>
+                          <option value="FOLHA_A3">Folha A3 (297x420mm)</option>
+                          <option value="METRO_LINEAR">Metro Linear (Rolo)</option>
+                          <option value="M2">Metro Quadrado (m²)</option>
+                        </select>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Cor de Amostra</label>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <input
+                            type="color"
+                            value={materialForm.color_hex || '#3b82f6'}
+                            onChange={(e) => setMaterialForm({ ...materialForm, color_hex: e.target.value })}
+                            style={{ width: 34, height: 34, border: 'none', borderRadius: 6, cursor: 'pointer', background: 'transparent' }}
+                          />
+                          <input
+                            type="text"
+                            className="form-control mono"
+                            value={materialForm.color_hex || '#3b82f6'}
+                            onChange={(e) => setMaterialForm({ ...materialForm, color_hex: e.target.value })}
+                            style={{ fontSize: '0.78rem' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Preço da Mídia (R$)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          className="form-control mono"
+                          value={materialForm.unit_price ?? 2.20}
+                          onChange={(e) => setMaterialForm({ ...materialForm, unit_price: Number(e.target.value) })}
+                          required
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Custo Tinta/Folha (R$)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          className="form-control mono"
+                          value={materialForm.ink_cost_per_unit ?? 0.50}
+                          onChange={(e) => setMaterialForm({ ...materialForm, ink_cost_per_unit: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Custo Laminação (R$)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          className="form-control mono"
+                          value={materialForm.lamination_cost_per_unit ?? 0.35}
+                          onChange={(e) => setMaterialForm({ ...materialForm, lamination_cost_per_unit: Number(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Estoque Atual (Qtd)</label>
+                        <input
+                          type="number"
+                          className="form-control mono"
+                          value={materialForm.stock_qty ?? 50}
+                          onChange={(e) => setMaterialForm({ ...materialForm, stock_qty: Number(e.target.value) })}
+                          required
+                        />
+                      </div>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Estoque Mínimo</label>
+                        <input
+                          type="number"
+                          className="form-control mono"
+                          value={materialForm.min_stock_qty ?? 15}
+                          onChange={(e) => setMaterialForm({ ...materialForm, min_stock_qty: Number(e.target.value) })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 

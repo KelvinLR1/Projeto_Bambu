@@ -18,7 +18,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
   initialClientId,
 }) => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [] });
+  const [materials, setMaterials] = useState<any>({ fdm: [], resin: [], laser: [], finishing: [], stickers: [] });
   const [equipments, setEquipments] = useState<any[]>([]);
   const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
   const [selectedCatalogId, setSelectedCatalogId] = useState<string>('');
@@ -582,6 +582,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                       <option value="RESIN">Resina</option>
                       <option value="LASER">Laser</option>
                       <option value="PINTURA">Pintura</option>
+                      <option value="ADESIVO">Adesivos</option>
                       <option value="COMBO">Combo</option>
                     </select>
 

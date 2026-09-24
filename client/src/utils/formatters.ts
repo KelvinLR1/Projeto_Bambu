@@ -66,6 +66,7 @@ export const PROCESS_MAP: Record<ProcessType, { label: string; icon: string }> =
   RESIN: { label: 'Resina 8K/12K', icon: '🧪' },
   LASER: { label: 'Laser / Gráfica', icon: '⚡' },
   PINTURA: { label: 'Pintura & Acabamento', icon: '🎨' },
+  ADESIVO: { label: 'Adesivos & Vinil', icon: '🏷️' },
   COMBO: { label: 'Combo Impressão + Pintura', icon: '✨' },
 };
 

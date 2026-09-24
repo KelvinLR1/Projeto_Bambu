@@ -78,11 +78,30 @@ export function initSchema() {
       created_at TEXT DEFAULT (datetime('now', 'localtime'))
     );
 
+    -- Insumos de Adesivos e Vinil de Recorte
+    CREATE TABLE IF NOT EXISTS materials_stickers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      brand TEXT,
+      finish TEXT NOT NULL DEFAULT 'BRILHO', -- BRILHO, FOSCO, HOLOGRAFICO, TRANSPARENTE, METALICO, KRAFT, REFLETIVO
+      unit_type TEXT NOT NULL DEFAULT 'FOLHA_A4', -- FOLHA_A4, FOLHA_A3, METRO_LINEAR, M2
+      sheet_width_mm REAL DEFAULT 210,
+      sheet_height_mm REAL DEFAULT 297,
+      unit_price REAL NOT NULL,
+      ink_cost_per_unit REAL DEFAULT 0.50,
+      lamination_cost_per_unit REAL DEFAULT 0.35,
+      color_hex TEXT DEFAULT '#3b82f6',
+      stock_qty REAL NOT NULL DEFAULT 50,
+      min_stock_qty REAL NOT NULL DEFAULT 15,
+      active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
     -- Equipamentos e Horômetro
     CREATE TABLE IF NOT EXISTS equipments (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      type TEXT NOT NULL, -- FDM, RESIN, LASER, AIRBRUSH, BOOTH
+      type TEXT NOT NULL, -- FDM, RESIN, LASER, AIRBRUSH, BOOTH, PLOTTER, STICKER_PRINTER, LAMINATOR
       power_watts REAL DEFAULT 150,
       purchase_cost REAL DEFAULT 0,
       lifespan_hours REAL DEFAULT 5000,
