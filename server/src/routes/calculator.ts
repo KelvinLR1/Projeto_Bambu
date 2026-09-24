@@ -27,7 +27,13 @@ router.post('/fdm', (req, res) => {
       equipmentId,
       cadHours = 0,
       failureRatePercent = 10,
-      profitMarginPercent = settings.default_profit_margin || 60
+      profitMarginPercent = settings.default_profit_margin || 60,
+      hasPostProcessing = false,
+      partSize = 'M',
+      prepHours = 1,
+      paintHours = 2,
+      varnishType = 'FOSCO',
+      consumablesCost
     } = req.body;
 
     let spoolPrice = 139.90;
@@ -61,7 +67,15 @@ router.post('/fdm', (req, res) => {
       cadHours: Number(cadHours) || 0,
       cadRateHour: Number(settings.cad_rate_hour) || 60,
       failureRatePercent: Number(failureRatePercent) || 10,
-      profitMarginPercent: Number(profitMarginPercent) || 60
+      profitMarginPercent: Number(profitMarginPercent) || 60,
+      hasPostProcessing: Boolean(hasPostProcessing),
+      partSize,
+      prepHours: Number(prepHours) || 0,
+      paintHours: Number(paintHours) || 0,
+      varnishType,
+      consumablesCost: consumablesCost !== undefined ? Number(consumablesCost) : undefined,
+      laborRateHour: Number(settings.print_operator_rate_hour) || 30,
+      painterRateHour: Number(settings.painter_rate_hour) || 45,
     });
 
     res.json(result);
@@ -81,7 +95,13 @@ router.post('/resin', (req, res) => {
       equipmentId,
       cadHours = 0,
       failureRatePercent = 12,
-      profitMarginPercent = settings.default_profit_margin || 65
+      profitMarginPercent = settings.default_profit_margin || 65,
+      hasPostProcessing = false,
+      partSize = 'M',
+      prepHours = 1,
+      paintHours = 2,
+      varnishType = 'FOSCO',
+      consumablesCost
     } = req.body;
 
     let bottlePrice = 189.90;
@@ -118,7 +138,15 @@ router.post('/resin', (req, res) => {
       cadHours: Number(cadHours) || 0,
       cadRateHour: Number(settings.cad_rate_hour) || 60,
       failureRatePercent: Number(failureRatePercent) || 12,
-      profitMarginPercent: Number(profitMarginPercent) || 65
+      profitMarginPercent: Number(profitMarginPercent) || 65,
+      hasPostProcessing: Boolean(hasPostProcessing),
+      partSize,
+      prepHours: Number(prepHours) || 0,
+      paintHours: Number(paintHours) || 0,
+      varnishType,
+      consumablesCost: consumablesCost !== undefined ? Number(consumablesCost) : undefined,
+      laborRateHour: Number(settings.print_operator_rate_hour) || 30,
+      painterRateHour: Number(settings.painter_rate_hour) || 45,
     });
 
     res.json(result);

@@ -10,6 +10,14 @@ export interface FdmCalcInput {
   cadRateHour?: number;
   failureRatePercent?: number;
   profitMarginPercent?: number;
+  hasPostProcessing?: boolean;
+  partSize?: 'P' | 'M' | 'G' | 'GG' | 'COMPLEXA';
+  prepHours?: number;
+  paintHours?: number;
+  laborRateHour?: number;
+  painterRateHour?: number;
+  varnishType?: 'FOSCO' | 'BRILHANTE' | 'ACETINADO';
+  consumablesCost?: number;
 }
 
 export interface ResinCalcInput {
@@ -25,6 +33,14 @@ export interface ResinCalcInput {
   cadRateHour?: number;
   failureRatePercent?: number;
   profitMarginPercent?: number;
+  hasPostProcessing?: boolean;
+  partSize?: 'P' | 'M' | 'G' | 'GG' | 'COMPLEXA';
+  prepHours?: number;
+  paintHours?: number;
+  laborRateHour?: number;
+  painterRateHour?: number;
+  varnishType?: 'FOSCO' | 'BRILHANTE' | 'ACETINADO';
+  consumablesCost?: number;
 }
 
 export interface LaserCalcInput {
@@ -87,7 +103,14 @@ export function calculateFdmCost(input: FdmCalcInput) {
     cadHours = 0,
     cadRateHour = 60,
     failureRatePercent = 10,
-    profitMarginPercent = 60
+    profitMarginPercent = 60,
+    hasPostProcessing = false,
+    partSize = 'M',
+    prepHours = 1,
+    paintHours = 2,
+    laborRateHour = 30,
+    painterRateHour = 45,
+    varnishType = 'FOSCO'
   } = input;
 
   const costPerGram = spoolPrice / spoolWeightG;
@@ -98,8 +121,28 @@ export function calculateFdmCost(input: FdmCalcInput) {
 
   const baseCost = rawMaterialCost + energyCost + machineDepreciation + cadCost;
   const failureBuffer = baseCost * (failureRatePercent / 100);
-  const totalCost = baseCost + failureBuffer;
 
+  let prepCost = 0;
+  let paintCost = 0;
+  let consumablesCost = 0;
+  let postProcessingCost = 0;
+
+  if (hasPostProcessing) {
+    const sizeMultiplier = {
+      P: 15.00,       // Miniatura até 7cm
+      M: 30.00,       // Estátua 15-20cm
+      G: 60.00,       // Peça 25-35cm
+      GG: 110.00,     // Cosplay / Peça grande
+      COMPLEXA: 90.00 // Detalhes múltiplos, mascaramento
+    }[partSize] || 30.00;
+
+    prepCost = prepHours * laborRateHour;
+    paintCost = paintHours * painterRateHour;
+    consumablesCost = input.consumablesCost !== undefined ? input.consumablesCost : sizeMultiplier;
+    postProcessingCost = prepCost + paintCost + consumablesCost;
+  }
+
+  const totalCost = baseCost + failureBuffer + postProcessingCost;
   const profitMultiplier = 1 + (profitMarginPercent / 100);
   const finalPrice = totalCost * profitMultiplier;
 
@@ -109,6 +152,13 @@ export function calculateFdmCost(input: FdmCalcInput) {
     machineDepreciation: Number(machineDepreciation.toFixed(2)),
     cadCost: Number(cadCost.toFixed(2)),
     failureBuffer: Number(failureBuffer.toFixed(2)),
+    hasPostProcessing: Boolean(hasPostProcessing),
+    prepCost: hasPostProcessing && prepCost > 0 ? Number(prepCost.toFixed(2)) : undefined,
+    paintCost: hasPostProcessing && paintCost > 0 ? Number(paintCost.toFixed(2)) : undefined,
+    consumablesCost: hasPostProcessing && consumablesCost > 0 ? Number(consumablesCost.toFixed(2)) : undefined,
+    postProcessingCost: hasPostProcessing ? Number(postProcessingCost.toFixed(2)) : undefined,
+    varnishType: hasPostProcessing ? varnishType : undefined,
+    partSize: hasPostProcessing ? partSize : undefined,
     totalCost: Number(totalCost.toFixed(2)),
     suggestedPrice: Number(finalPrice.toFixed(2)),
     marginAmount: Number((finalPrice - totalCost).toFixed(2)),
@@ -129,7 +179,14 @@ export function calculateResinCost(input: ResinCalcInput) {
     cadHours = 0,
     cadRateHour = 60,
     failureRatePercent = 12,
-    profitMarginPercent = 65
+    profitMarginPercent = 65,
+    hasPostProcessing = false,
+    partSize = 'M',
+    prepHours = 1,
+    paintHours = 2,
+    laborRateHour = 30,
+    painterRateHour = 45,
+    varnishType = 'FOSCO'
   } = input;
 
   const costPerMl = bottlePrice / bottleVolumeMl;
@@ -141,8 +198,28 @@ export function calculateResinCost(input: ResinCalcInput) {
 
   const baseCost = rawMaterialCost + washCureCost + energyCost + machineDepreciation + cadCost;
   const failureBuffer = baseCost * (failureRatePercent / 100);
-  const totalCost = baseCost + failureBuffer;
 
+  let prepCost = 0;
+  let paintCost = 0;
+  let consumablesCost = 0;
+  let postProcessingCost = 0;
+
+  if (hasPostProcessing) {
+    const sizeMultiplier = {
+      P: 15.00,       // Miniatura até 7cm
+      M: 30.00,       // Estátua 15-20cm
+      G: 60.00,       // Peça 25-35cm
+      GG: 110.00,     // Cosplay / Peça grande
+      COMPLEXA: 90.00 // Detalhes múltiplos, mascaramento
+    }[partSize] || 30.00;
+
+    prepCost = prepHours * laborRateHour;
+    paintCost = paintHours * painterRateHour;
+    consumablesCost = input.consumablesCost !== undefined ? input.consumablesCost : sizeMultiplier;
+    postProcessingCost = prepCost + paintCost + consumablesCost;
+  }
+
+  const totalCost = baseCost + failureBuffer + postProcessingCost;
   const finalPrice = totalCost * (1 + (profitMarginPercent / 100));
 
   return {
@@ -152,6 +229,13 @@ export function calculateResinCost(input: ResinCalcInput) {
     machineDepreciation: Number(machineDepreciation.toFixed(2)),
     cadCost: Number(cadCost.toFixed(2)),
     failureBuffer: Number(failureBuffer.toFixed(2)),
+    hasPostProcessing: Boolean(hasPostProcessing),
+    prepCost: hasPostProcessing && prepCost > 0 ? Number(prepCost.toFixed(2)) : undefined,
+    paintCost: hasPostProcessing && paintCost > 0 ? Number(paintCost.toFixed(2)) : undefined,
+    consumablesCost: hasPostProcessing && consumablesCost > 0 ? Number(consumablesCost.toFixed(2)) : undefined,
+    postProcessingCost: hasPostProcessing ? Number(postProcessingCost.toFixed(2)) : undefined,
+    varnishType: hasPostProcessing ? varnishType : undefined,
+    partSize: hasPostProcessing ? partSize : undefined,
     totalCost: Number(totalCost.toFixed(2)),
     suggestedPrice: Number(finalPrice.toFixed(2)),
     marginAmount: Number((finalPrice - totalCost).toFixed(2)),

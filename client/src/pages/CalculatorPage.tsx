@@ -347,6 +347,175 @@ const ProfitMarginControl: React.FC<ProfitMarginControlProps> = ({
   );
 };
 
+interface IntegratedPostProcessingControlProps {
+  hasPostProcessing: boolean;
+  onToggle: (checked: boolean) => void;
+  paintSize: 'P' | 'M' | 'G' | 'GG' | 'COMPLEXA';
+  onChangePaintSize: (size: 'P' | 'M' | 'G' | 'GG' | 'COMPLEXA') => void;
+  prepHours: number;
+  onChangePrepHours: (hours: number) => void;
+  paintHours: number;
+  onChangePaintHours: (hours: number) => void;
+  paintVarnish: string;
+  onChangePaintVarnish: (varnish: string) => void;
+  postProcessingCost?: number;
+}
+
+const IntegratedPostProcessingControl: React.FC<IntegratedPostProcessingControlProps> = ({
+  hasPostProcessing,
+  onToggle,
+  paintSize,
+  onChangePaintSize,
+  prepHours,
+  onChangePrepHours,
+  paintHours,
+  onChangePaintHours,
+  paintVarnish,
+  onChangePaintVarnish,
+  postProcessingCost,
+}) => {
+  return (
+    <div
+      style={{
+        background: hasPostProcessing ? 'rgba(244, 63, 94, 0.04)' : 'var(--bg-surface-elevated, var(--bg-surface))',
+        border: hasPostProcessing ? '1.5px solid rgba(244, 63, 94, 0.45)' : '1px dashed var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '16px',
+        transition: 'all 0.22s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        marginTop: 6,
+        marginBottom: 6,
+        boxShadow: hasPostProcessing ? '0 4px 14px rgba(244, 63, 94, 0.08)' : 'none',
+      }}
+    >
+      {/* Header com Toggle Switch */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
+        onClick={() => onToggle(!hasPostProcessing)}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div
+            style={{
+              background: hasPostProcessing ? 'rgba(244, 63, 94, 0.16)' : 'var(--bg-surface)',
+              color: hasPostProcessing ? '#f43f5e' : 'var(--text-muted)',
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Paintbrush size={17} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: hasPostProcessing ? '#f43f5e' : 'var(--text-primary)' }}>
+              Pós-Processamento & Pintura Integrados
+            </div>
+            <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
+              {hasPostProcessing
+                ? 'Lixamento, primer, pintura de aerógrafo e verniz inclusos na peça'
+                : 'Clique para incluir acabamento artesanal e pintura nesta peça'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {hasPostProcessing && postProcessingCost !== undefined && (
+            <span
+              style={{
+                background: 'rgba(244, 63, 94, 0.12)',
+                color: '#f43f5e',
+                border: '1px solid rgba(244, 63, 94, 0.3)',
+                borderRadius: 'var(--radius-full)',
+                padding: '2px 8px',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+              }}
+            >
+              +{formatCurrency(postProcessingCost)}
+            </span>
+          )}
+          <input
+            type="checkbox"
+            checked={hasPostProcessing}
+            onChange={e => onToggle(e.target.checked)}
+            onClick={e => e.stopPropagation()}
+            style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#f43f5e' }}
+          />
+        </div>
+      </div>
+
+      {/* Formulário Expansível quando hasPostProcessing === true */}
+      {hasPostProcessing && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 12, borderTop: '1px solid rgba(244, 63, 94, 0.2)' }}>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label" style={{ fontSize: '0.78rem' }}>Porte / Complexidade da Peça</label>
+            <select
+              className="form-control"
+              value={paintSize}
+              onChange={e => onChangePaintSize(e.target.value as any)}
+            >
+              <option value="P">Pequeno (Miniaturas até 7cm) - Primer e Tintas ~R$ 15</option>
+              <option value="M">Médio (Estátuas 15-20cm) - Primer e Tintas ~R$ 30</option>
+              <option value="G">Grande (Peças 25-35cm) - Primer e Tintas ~R$ 60</option>
+              <option value="GG">Cosplay / Peça Grande (+35cm) - Insumos ~R$ 110</option>
+              <option value="COMPLEXA">Complexa (Multi-cores / Mascaramento) - Insumos ~R$ 90</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>Horas Preparação & Lixamento (h)</label>
+              <input
+                type="number"
+                step="0.5"
+                min="0"
+                className="form-control mono"
+                value={prepHours}
+                onChange={e => onChangePrepHours(Number(e.target.value))}
+              />
+            </div>
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>Horas Pintura & Aerografia (h)</label>
+              <input
+                type="number"
+                step="0.5"
+                min="0"
+                className="form-control mono"
+                value={paintHours}
+                onChange={e => onChangePaintHours(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label" style={{ fontSize: '0.78rem' }}>Tipo de Verniz Protetor</label>
+            <select
+              className="form-control"
+              value={paintVarnish}
+              onChange={e => onChangePaintVarnish(e.target.value)}
+            >
+              <option value="FOSCO">Verniz Bi-componente Fosco Acetinado (Anime/Colecionáveis)</option>
+              <option value="BRILHANTE">Verniz Alto Brilho / Automotivo</option>
+              <option value="ACETINADO">Verniz Acetinado Semibrilho</option>
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface CalculatorPageProps {
   onGenerateOrder: (calcItem: any) => void;
   initialProduct?: Product | null;
@@ -382,6 +551,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const [fdmCadHours, setFdmCadHours] = useState(0.5);
   const [fdmFailureRate, setFdmFailureRate] = useState(10);
   const [fdmMargin, setFdmMargin] = useState(65);
+  const [fdmHasPostProcessing, setFdmHasPostProcessing] = useState(false);
+  const [fdmPaintSize, setFdmPaintSize] = useState<'P' | 'M' | 'G' | 'GG' | 'COMPLEXA'>('M');
+  const [fdmPaintPrepHours, setFdmPaintPrepHours] = useState(1.5);
+  const [fdmPaintHours, setFdmPaintHours] = useState(2);
+  const [fdmPaintVarnish, setFdmPaintVarnish] = useState('FOSCO');
   const [fdmResult, setFdmResult] = useState<any>(null);
 
   // Resin State
@@ -392,6 +566,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const [resinCadHours, setResinCadHours] = useState(0.5);
   const [resinFailureRate, setResinFailureRate] = useState(12);
   const [resinMargin, setResinMargin] = useState(65);
+  const [resinHasPostProcessing, setResinHasPostProcessing] = useState(false);
+  const [resinPaintSize, setResinPaintSize] = useState<'P' | 'M' | 'G' | 'GG' | 'COMPLEXA'>('M');
+  const [resinPaintPrepHours, setResinPaintPrepHours] = useState(1);
+  const [resinPaintHours, setResinPaintHours] = useState(2.5);
+  const [resinPaintVarnish, setResinPaintVarnish] = useState('FOSCO');
   const [resinResult, setResinResult] = useState<any>(null);
 
   // Laser State
@@ -513,6 +692,12 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       if (params?.failureRatePercent != null) setFdmFailureRate(Number(params.failureRatePercent));
       if (params?.profitMarginPercent != null) setFdmMargin(Number(params.profitMarginPercent));
       else if (prod.margin_percent != null) setFdmMargin(Number(prod.margin_percent));
+
+      setFdmHasPostProcessing(Boolean(params?.hasPostProcessing));
+      if (params?.paintSize) setFdmPaintSize(params.paintSize);
+      if (params?.paintPrepHours != null) setFdmPaintPrepHours(Number(params.paintPrepHours));
+      if (params?.paintHours != null) setFdmPaintHours(Number(params.paintHours));
+      if (params?.paintVarnish) setFdmPaintVarnish(params.paintVarnish);
     } else if (targetTab === 'RESIN') {
       if (params?.materialId) setResinMaterialId(params.materialId);
       else if (prod.material_id) setResinMaterialId(prod.material_id);
@@ -530,6 +715,12 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       if (params?.failureRatePercent != null) setResinFailureRate(Number(params.failureRatePercent));
       if (params?.profitMarginPercent != null) setResinMargin(Number(params.profitMarginPercent));
       else if (prod.margin_percent != null) setResinMargin(Number(prod.margin_percent));
+
+      setResinHasPostProcessing(Boolean(params?.hasPostProcessing));
+      if (params?.paintSize) setResinPaintSize(params.paintSize);
+      if (params?.paintPrepHours != null) setResinPaintPrepHours(Number(params.paintPrepHours));
+      if (params?.paintHours != null) setResinPaintHours(Number(params.paintHours));
+      if (params?.paintVarnish) setResinPaintVarnish(params.paintVarnish);
     } else if (targetTab === 'LASER') {
       if (params?.materialId) setLaserMaterialId(params.materialId);
       else if (prod.material_id) setLaserMaterialId(prod.material_id);
@@ -761,6 +952,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: fdmCadHours,
           failureRatePercent: fdmFailureRate,
           profitMarginPercent: fdmMargin,
+          hasPostProcessing: fdmHasPostProcessing,
+          paintSize: fdmPaintSize,
+          paintPrepHours: fdmPaintPrepHours,
+          paintHours: fdmPaintHours,
+          paintVarnish: fdmPaintVarnish,
         };
       } else if (activeTab === 'RESIN') {
         timeHours = resinHours;
@@ -776,6 +972,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: resinCadHours,
           failureRatePercent: resinFailureRate,
           profitMarginPercent: resinMargin,
+          hasPostProcessing: resinHasPostProcessing,
+          paintSize: resinPaintSize,
+          paintPrepHours: resinPaintPrepHours,
+          paintHours: resinPaintHours,
+          paintVarnish: resinPaintVarnish,
         };
       } else if (activeTab === 'LASER') {
         timeHours = Number((laserMinutes / 60).toFixed(2));
@@ -868,6 +1069,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: fdmCadHours,
           failureRatePercent: fdmFailureRate,
           profitMarginPercent: fdmMargin,
+          hasPostProcessing: fdmHasPostProcessing,
+          paintSize: fdmPaintSize,
+          paintPrepHours: fdmPaintPrepHours,
+          paintHours: fdmPaintHours,
+          paintVarnish: fdmPaintVarnish,
         };
       } else if (activeTab === 'RESIN') {
         timeHours = resinHours;
@@ -883,6 +1089,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: resinCadHours,
           failureRatePercent: resinFailureRate,
           profitMarginPercent: resinMargin,
+          hasPostProcessing: resinHasPostProcessing,
+          paintSize: resinPaintSize,
+          paintPrepHours: resinPaintPrepHours,
+          paintHours: resinPaintHours,
+          paintVarnish: resinPaintVarnish,
         };
       } else if (activeTab === 'LASER') {
         timeHours = Number((laserMinutes / 60).toFixed(2));
@@ -951,6 +1162,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: fdmCadHours,
           failureRatePercent: fdmFailureRate,
           profitMarginPercent: fdmMargin,
+          hasPostProcessing: fdmHasPostProcessing,
+          partSize: fdmPaintSize,
+          prepHours: fdmPaintPrepHours,
+          paintHours: fdmPaintHours,
+          varnishType: fdmPaintVarnish,
         });
         setFdmResult(res);
       } catch (err) {
@@ -958,7 +1174,20 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       }
     };
     calc();
-  }, [fdmMaterialId, fdmWeightG, fdmHours, fdmEquipId, fdmCadHours, fdmFailureRate, fdmMargin]);
+  }, [
+    fdmMaterialId,
+    fdmWeightG,
+    fdmHours,
+    fdmEquipId,
+    fdmCadHours,
+    fdmFailureRate,
+    fdmMargin,
+    fdmHasPostProcessing,
+    fdmPaintSize,
+    fdmPaintPrepHours,
+    fdmPaintHours,
+    fdmPaintVarnish,
+  ]);
 
   // Re-calculate Resin
   useEffect(() => {
@@ -972,6 +1201,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           cadHours: resinCadHours,
           failureRatePercent: resinFailureRate,
           profitMarginPercent: resinMargin,
+          hasPostProcessing: resinHasPostProcessing,
+          partSize: resinPaintSize,
+          prepHours: resinPaintPrepHours,
+          paintHours: resinPaintHours,
+          varnishType: resinPaintVarnish,
         });
         setResinResult(res);
       } catch (err) {
@@ -979,7 +1213,20 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       }
     };
     calc();
-  }, [resinMaterialId, resinVolumeMl, resinHours, resinEquipId, resinCadHours, resinFailureRate, resinMargin]);
+  }, [
+    resinMaterialId,
+    resinVolumeMl,
+    resinHours,
+    resinEquipId,
+    resinCadHours,
+    resinFailureRate,
+    resinMargin,
+    resinHasPostProcessing,
+    resinPaintSize,
+    resinPaintPrepHours,
+    resinPaintHours,
+    resinPaintVarnish,
+  ]);
 
   // Re-calculate Laser
   useEffect(() => {
@@ -1075,10 +1322,13 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
 
     if (activeTab === 'FDM' && fdmResult) {
       const mat = materials.fdm.find((m: any) => m.id === fdmMaterialId);
+      const paintDesc = fdmHasPostProcessing
+        ? ` + Pintura Porte ${fdmPaintSize} (${fdmPaintHours}h, Prep ${fdmPaintPrepHours}h, Verniz ${fdmPaintVarnish})`
+        : '';
       const title = selectedProduct ? selectedProduct.name : `Impressão FDM: ${mat?.name || 'Filamento'}`;
       item = {
         process_type: 'FDM',
-        description: `${title}${partsSummaryText} (${fdmWeightG}g, ${fdmHours}h)`,
+        description: `${title}${partsSummaryText} (${fdmWeightG}g, ${fdmHours}h${paintDesc})`,
         quantity: 1,
         material_id: fdmMaterialId,
         equipment_id: fdmEquipId,
@@ -1088,6 +1338,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
         calc_params: {
           weight_g: fdmWeightG,
           hours: fdmHours,
+          has_post_processing: fdmHasPostProcessing,
+          paint_size: fdmPaintSize,
+          paint_prep_hours: fdmPaintPrepHours,
+          paint_hours: fdmPaintHours,
+          paint_varnish: fdmPaintVarnish,
           selected_parts: selectedPartsList,
           is_partial: isPartialAssembly,
           ...fdmResult,
@@ -1095,10 +1350,13 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       };
     } else if (activeTab === 'RESIN' && resinResult) {
       const mat = materials.resin.find((m: any) => m.id === resinMaterialId);
+      const paintDesc = resinHasPostProcessing
+        ? ` + Pintura Porte ${resinPaintSize} (${resinPaintHours}h, Prep ${resinPaintPrepHours}h, Verniz ${resinPaintVarnish})`
+        : '';
       const title = selectedProduct ? selectedProduct.name : `Impressão Resina: ${mat?.name || 'Resina'}`;
       item = {
         process_type: 'RESIN',
-        description: `${title}${partsSummaryText} (${resinVolumeMl}ml, ${resinHours}h)`,
+        description: `${title}${partsSummaryText} (${resinVolumeMl}ml, ${resinHours}h${paintDesc})`,
         quantity: 1,
         material_id: resinMaterialId,
         equipment_id: resinEquipId,
@@ -1108,6 +1366,11 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
         calc_params: {
           volume_ml: resinVolumeMl,
           hours: resinHours,
+          has_post_processing: resinHasPostProcessing,
+          paint_size: resinPaintSize,
+          paint_prep_hours: resinPaintPrepHours,
+          paint_hours: resinPaintHours,
+          paint_varnish: resinPaintVarnish,
           selected_parts: selectedPartsList,
           is_partial: isPartialAssembly,
           ...resinResult,
@@ -1677,7 +1940,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
           { id: 'FDM', label: 'Impressão 3D FDM', icon: Printer, color: 'var(--brand-primary)' },
           { id: 'RESIN', label: 'Impressão 3D Resina', icon: TestTube, color: 'var(--brand-purple, #8b5cf6)' },
           { id: 'LASER', label: 'Laser & Papelaria', icon: Zap, color: '#f59e0b' },
-          { id: 'PINTURA', label: 'Pós-Processamento & Pintura', icon: Paintbrush, color: '#f43f5e' },
+          { id: 'PINTURA', label: 'Pós-Processamento Avulso (Peça Externa)', icon: Paintbrush, color: '#f43f5e' },
           { id: 'ADESIVO', label: 'Adesivos & Vinil', icon: Tag, color: '#06b6d4' },
         ].map(tab => {
           const Icon = tab.icon;
@@ -1801,6 +2064,20 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                 </div>
               </div>
 
+              <IntegratedPostProcessingControl
+                hasPostProcessing={fdmHasPostProcessing}
+                onToggle={setFdmHasPostProcessing}
+                paintSize={fdmPaintSize}
+                onChangePaintSize={setFdmPaintSize}
+                prepHours={fdmPaintPrepHours}
+                onChangePrepHours={setFdmPaintPrepHours}
+                paintHours={fdmPaintHours}
+                onChangePaintHours={setFdmPaintHours}
+                paintVarnish={fdmPaintVarnish}
+                onChangePaintVarnish={setFdmPaintVarnish}
+                postProcessingCost={fdmResult?.postProcessingCost}
+              />
+
               <ProfitMarginControl
                 marginPercent={fdmMargin}
                 onChangeMargin={setFdmMargin}
@@ -1895,6 +2172,20 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                   />
                 </div>
               </div>
+
+              <IntegratedPostProcessingControl
+                hasPostProcessing={resinHasPostProcessing}
+                onToggle={setResinHasPostProcessing}
+                paintSize={resinPaintSize}
+                onChangePaintSize={setResinPaintSize}
+                prepHours={resinPaintPrepHours}
+                onChangePrepHours={setResinPaintPrepHours}
+                paintHours={resinPaintHours}
+                onChangePaintHours={setResinPaintHours}
+                paintVarnish={resinPaintVarnish}
+                onChangePaintVarnish={setResinPaintVarnish}
+                postProcessingCost={resinResult?.postProcessingCost}
+              />
 
               <ProfitMarginControl
                 marginPercent={resinMargin}
@@ -2508,23 +2799,52 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                     </div>
                   )}
 
+                  {currentResult.hasPostProcessing && currentResult.postProcessingCost !== undefined && (
+                    <div
+                      style={{
+                        margin: '4px 0',
+                        padding: '6px 10px',
+                        background: 'rgba(244, 63, 94, 0.08)',
+                        border: '1px solid rgba(244, 63, 94, 0.25)',
+                        borderRadius: 'var(--radius-sm)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '0.82rem',
+                      }}
+                    >
+                      <span style={{ color: '#f43f5e', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Paintbrush size={14} /> Pós-Proc. & Pintura ({currentResult.partSize || 'M'}):
+                      </span>
+                      <strong className="mono" style={{ color: '#f43f5e' }}>
+                        +{formatCurrency(currentResult.postProcessingCost)}
+                      </strong>
+                    </div>
+                  )}
+
                   {currentResult.prepCost !== undefined && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Lixamento & Preparação:</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: currentResult.hasPostProcessing ? 12 : 0 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        {currentResult.hasPostProcessing ? '↳ Lixamento & Preparação:' : 'Lixamento & Preparação:'}
+                      </span>
                       <strong className="mono">{formatCurrency(currentResult.prepCost)}</strong>
                     </div>
                   )}
 
                   {currentResult.paintCost !== undefined && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Pintura & Aerografia:</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: currentResult.hasPostProcessing ? 12 : 0 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        {currentResult.hasPostProcessing ? '↳ Pintura & Aerografia:' : 'Pintura & Aerografia:'}
+                      </span>
                       <strong className="mono">{formatCurrency(currentResult.paintCost)}</strong>
                     </div>
                   )}
 
                   {currentResult.consumablesCost !== undefined && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Insumos (Primer, Tintas, Verniz):</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: currentResult.hasPostProcessing ? 12 : 0 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        {currentResult.hasPostProcessing ? '↳ Insumos (Primer, Tintas, Verniz):' : 'Insumos (Primer, Tintas, Verniz):'}
+                      </span>
                       <strong className="mono">{formatCurrency(currentResult.consumablesCost)}</strong>
                     </div>
                   )}
