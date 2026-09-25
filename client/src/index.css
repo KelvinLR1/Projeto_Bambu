@@ -1226,18 +1226,74 @@ select option:checked {
 @keyframes tabPaneEnter {
   0% {
     opacity: 0;
-    transform: translateY(7px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 .tab-pane-animated,
 .tab-content-animated {
-  animation: tabPaneEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: tabPaneEnter 0.2s ease-out forwards;
+  will-change: opacity;
+}
+
+@keyframes tabIndicatorEnter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Technology Tab Navigation & Animated Option Switching */
+.tech-tab-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: border-color 0.2s ease,
+              background-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease;
+  overflow: hidden;
+  user-select: none;
+}
+
+.tech-tab-btn:hover:not(.active) {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--text-secondary) 25%, var(--border-subtle));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.tech-tab-btn.active {
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-surface-elevated);
+}
+
+.tech-tab-btn .tab-icon {
+  transition: color 0.2s ease;
+}
+
+.tech-tab-btn .tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  animation: tabIndicatorEnter 0.2s ease forwards;
 }
 
 /* 3. Micro-interações táteis em Botões e Filtros */

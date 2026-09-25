@@ -25,7 +25,9 @@ import {
   CheckSquare,
   Square,
   FileCode,
-  Check
+  Check,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Product, ProductFile } from '../types';
 
@@ -456,7 +458,7 @@ const IntegratedPostProcessingControl: React.FC<IntegratedPostProcessingControlP
 
       {/* Formulário Expansível quando hasPostProcessing === true */}
       {hasPostProcessing && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 12, borderTop: '1px solid rgba(244, 63, 94, 0.2)' }}>
+        <div className="tab-pane-animated" style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 12, borderTop: '1px solid rgba(244, 63, 94, 0.2)' }}>
           <div className="form-group" style={{ margin: 0 }}>
             <label className="form-label" style={{ fontSize: '0.78rem' }}>Porte / Complexidade da Peça</label>
             <select
@@ -537,6 +539,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
   const [projectParts, setProjectParts] = useState<ProductFile[]>([]);
   const [selectedPartIds, setSelectedPartIds] = useState<Set<string>>(new Set());
   const [loadingParts, setLoadingParts] = useState(false);
+  const [isPartsCollapsed, setIsPartsCollapsed] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -1628,311 +1631,307 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
       )}
 
       {/* 3.1. Painel Interativo de Sub-peças do Projeto */}
-      {selectedProduct && projectParts.length > 0 && (
-        <div
-          className="glass-panel"
-          style={{
-            padding: '16px 20px',
-            marginBottom: 24,
-            border: selectedPartIds.size < projectParts.length
-              ? '1px solid rgba(245, 158, 11, 0.45)'
-              : '1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent)',
-            background: selectedPartIds.size < projectParts.length
-              ? 'color-mix(in srgb, #f59e0b 5%, var(--bg-surface))'
-              : 'var(--bg-surface-elevated, var(--bg-surface))',
-            borderRadius: 'var(--radius-lg, 14px)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          }}
-        >
-          {/* Header da Barra de Sub-peças */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div
-                style={{
-                  background: selectedPartIds.size < projectParts.length
-                    ? 'rgba(245, 158, 11, 0.18)'
-                    : 'color-mix(in srgb, var(--brand-primary) 18%, transparent)',
-                  color: selectedPartIds.size < projectParts.length ? '#f59e0b' : 'var(--brand-primary)',
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                }}
-              >
-                <Layers size={18} />
-              </div>
-              <div>
+      {selectedProduct && projectParts.length > 0 && (() => {
+        const activePartsCount = selectedPartIds.size;
+        const totalPartsCount = projectParts.length;
+        const isAllPartsSelected = activePartsCount === totalPartsCount;
+        const isPartialParts = activePartsCount > 0 && activePartsCount < totalPartsCount;
+
+        const totalSelectedWeightG = projectParts
+          .filter(p => selectedPartIds.has(p.id))
+          .reduce((sum, p) => sum + (Number(p.weight_g) || 0) * (Number(p.quantity) || 1), 0);
+
+        const totalSelectedHours = Number(projectParts
+          .filter(p => selectedPartIds.has(p.id))
+          .reduce((sum, p) => sum + (Number(p.print_time_hours) || 0) * (Number(p.quantity) || 1), 0).toFixed(1));
+
+        return (
+          <div
+            className="glass-panel"
+            style={{
+              padding: '12px 16px',
+              marginBottom: 20,
+              borderRadius: 'var(--radius-lg, 12px)',
+              border: isPartialParts
+                ? '1px solid rgba(245, 158, 11, 0.4)'
+                : '1px solid var(--border-subtle)',
+              background: isPartialParts
+                ? 'color-mix(in srgb, #f59e0b 3%, var(--bg-card))'
+                : 'var(--bg-card)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {/* Header Compacto e Elegante */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+              {/* Título + Status + Totais */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <div
+                  style={{
+                    background: isPartialParts ? 'rgba(245, 158, 11, 0.15)' : 'color-mix(in srgb, var(--brand-primary) 14%, transparent)',
+                    color: isPartialParts ? '#f59e0b' : 'var(--brand-primary)',
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Layers size={16} />
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                    Sub-peças do Projeto ({selectedPartIds.size} de {projectParts.length} selecionadas)
-                  </h4>
-                  {selectedPartIds.size === projectParts.length ? (
-                    <span
-                      style={{
-                        background: 'rgba(16, 185, 129, 0.15)',
-                        color: '#10b981',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        borderRadius: 6,
-                        padding: '2px 8px',
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                      }}
-                    >
-                      MONTAGEM COMPLETA
-                    </span>
-                  ) : selectedPartIds.size > 0 ? (
-                    <span
-                      style={{
-                        background: 'rgba(245, 158, 11, 0.15)',
-                        color: '#f59e0b',
-                        border: '1px solid rgba(245, 158, 11, 0.3)',
-                        borderRadius: 6,
-                        padding: '2px 8px',
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                      }}
-                    >
-                      PRODUÇÃO PARCIAL
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        background: 'rgba(239, 68, 68, 0.15)',
-                        color: '#ef4444',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        borderRadius: 6,
-                        padding: '2px 8px',
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                      }}
-                    >
-                      NENHUMA PEÇA MARCADA
+                  <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Sub-peças do Projeto
+                  </span>
+
+                  <span
+                    style={{
+                      background: isAllPartsSelected
+                        ? 'rgba(16, 185, 129, 0.12)'
+                        : isPartialParts
+                        ? 'rgba(245, 158, 11, 0.12)'
+                        : 'rgba(239, 68, 68, 0.12)',
+                      color: isAllPartsSelected
+                        ? '#10b981'
+                        : isPartialParts
+                        ? '#f59e0b'
+                        : '#ef4444',
+                      border: `1px solid ${
+                        isAllPartsSelected
+                          ? 'rgba(16, 185, 129, 0.25)'
+                          : isPartialParts
+                          ? 'rgba(245, 158, 11, 0.25)'
+                          : 'rgba(239, 68, 68, 0.25)'
+                      }`,
+                      borderRadius: 'var(--radius-full, 999px)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {isAllPartsSelected
+                      ? `Todas (${totalPartsCount}) ativas`
+                      : isPartialParts
+                      ? `${activePartsCount} de ${totalPartsCount} ativas`
+                      : 'Nenhuma ativa'}
+                  </span>
+
+                  {activePartsCount > 0 && (
+                    <span className="mono" style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      • {totalSelectedWeightG > 0 ? `${totalSelectedWeightG}g` : ''} {totalSelectedHours > 0 ? `• ${totalSelectedHours}h` : ''}
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-                  Marque ou desmarque as partes que compõem este modelo. O peso, tempo e custos são recalculados automaticamente na simulação.
-                </div>
               </div>
-            </div>
 
-            {/* Ações de Seleção Rápida */}
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleSelectAllParts}
-                style={{ fontSize: '0.78rem', padding: '6px 12px' }}
-                title="Marcar todas as sub-peças"
-              >
-                <CheckSquare size={14} color="var(--brand-primary)" />
-                <span>Selecionar Todas</span>
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleDeselectAllParts}
-                style={{ fontSize: '0.78rem', padding: '6px 12px' }}
-                title="Desmarcar todas as sub-peças"
-              >
-                <Square size={14} color="var(--text-muted)" />
-                <span>Desmarcar Todas</span>
-              </button>
-            </div>
-          </div>
+              {/* Ações Rápidas & Recolher/Expandir */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--bg-surface)', padding: '2px 6px', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
+                  <button
+                    type="button"
+                    onClick={handleSelectAllParts}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: isAllPartsSelected ? 'var(--brand-primary)' : 'var(--text-secondary)',
+                      fontWeight: isAllPartsSelected ? 700 : 500,
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                      padding: '3px 6px',
+                      borderRadius: 4,
+                    }}
+                  >
+                    Todas
+                  </button>
+                  <span style={{ color: 'var(--border-subtle)', fontSize: '0.7rem' }}>|</span>
+                  <button
+                    type="button"
+                    onClick={handleDeselectAllParts}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: activePartsCount === 0 ? '#ef4444' : 'var(--text-secondary)',
+                      fontWeight: activePartsCount === 0 ? 700 : 500,
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                      padding: '3px 6px',
+                      borderRadius: 4,
+                    }}
+                  >
+                    Nenhuma
+                  </button>
+                </div>
 
-          {/* Grid de Sub-peças com Cards Clicáveis */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 10,
-            }}
-          >
-            {projectParts.map(part => {
-              const isSelected = selectedPartIds.has(part.id);
-              return (
-                <div
-                  key={part.id}
-                  onClick={() => handleTogglePart(part.id)}
+                <button
+                  type="button"
+                  onClick={() => setIsPartsCollapsed(!isPartsCollapsed)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
-                    padding: '10px 14px',
-                    borderRadius: 10,
+                    gap: 4,
+                    border: '1px solid var(--border-subtle)',
+                    background: 'var(--bg-surface)',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.74rem',
+                    fontWeight: 600,
                     cursor: 'pointer',
-                    userSelect: 'none',
-                    border: isSelected
-                      ? '1px solid var(--brand-primary)'
-                      : '1px dashed var(--border-subtle)',
-                    background: isSelected
-                      ? 'color-mix(in srgb, var(--brand-primary) 10%, var(--bg-surface))'
-                      : 'rgba(255,255,255,0.02)',
-                    transition: 'all 0.18s ease',
-                    opacity: isSelected ? 1 : 0.6,
-                    transform: isSelected ? 'scale(1.01)' : 'scale(1)',
-                    boxShadow: isSelected ? '0 2px 8px var(--brand-primary-glow)' : 'none',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    transition: 'all 0.15s ease',
+                  }}
+                  title={isPartsCollapsed ? 'Expandir sub-peças' : 'Recolher sub-peças'}
+                >
+                  <span>{isPartsCollapsed ? 'Expandir' : 'Recolher'}</span>
+                  {isPartsCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Grid de Sub-peças com Cards Clicáveis e Limpos */}
+            {!isPartsCollapsed && (
+              <div style={{ marginTop: 12 }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gap: 8,
                   }}
                 >
-                  {/* Checkbox visual interativo */}
-                  <div
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 6,
-                      border: isSelected ? '2px solid var(--brand-primary)' : '2px solid var(--text-muted)',
-                      background: isSelected ? 'var(--brand-primary)' : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      color: '#fff',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {isSelected && <Check size={14} strokeWidth={3} />}
-                  </div>
-
-                  {/* Foto individual ou ícone da sub-peça */}
-                  <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 8,
-                      overflow: 'hidden',
-                      background: 'rgba(0,0,0,0.3)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {part.image_url ? (
-                      <img
-                        src={part.image_url}
-                        alt={part.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <FileCode size={20} color={isSelected ? 'var(--brand-primary)' : 'var(--text-muted)'} />
-                    )}
-                  </div>
-
-                  {/* Dados e Badges da sub-peça */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: '0.86rem',
-                        fontWeight: 700,
-                        color: isSelected ? 'var(--text-primary)' : 'var(--text-muted)',
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                      }}
-                      title={part.name}
-                    >
-                      {part.name}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                      <span
+                  {projectParts.map(part => {
+                    const isSelected = selectedPartIds.has(part.id);
+                    const qty = Number(part.quantity) || 1;
+                    const weight = Number(part.weight_g) || 0;
+                    const hours = Number(part.print_time_hours) || 0;
+                    return (
+                      <div
+                        key={part.id}
+                        onClick={() => handleTogglePart(part.id)}
                         style={{
-                          background: 'rgba(59, 130, 246, 0.15)',
-                          color: '#3b82f6',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          borderRadius: 4,
-                          padding: '1px 5px',
-                          fontSize: '0.68rem',
-                          fontWeight: 800,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '7px 10px',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          border: isSelected
+                            ? '1px solid color-mix(in srgb, var(--brand-primary) 40%, var(--border-subtle))'
+                            : '1px solid var(--border-subtle)',
+                          background: isSelected
+                            ? 'color-mix(in srgb, var(--brand-primary) 6%, var(--bg-surface))'
+                            : 'var(--bg-surface)',
+                          transition: 'border-color 0.15s ease, background-color 0.15s ease',
+                          opacity: isSelected ? 1 : 0.55,
                         }}
                       >
-                        {part.quantity || 1}x
-                      </span>
-
-                      <span
-                        style={{
-                          background: 'rgba(255,255,255,0.06)',
-                          color: 'var(--text-muted)',
-                          borderRadius: 4,
-                          padding: '1px 5px',
-                          fontSize: '0.68rem',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {part.file_type || '3D'}
-                      </span>
-
-                      {part.weight_g ? (
-                        <span
+                        {/* Checkbox visual interativo */}
+                        <div
                           style={{
-                            background: 'rgba(16, 185, 129, 0.12)',
-                            color: '#10b981',
+                            width: 17,
+                            height: 17,
                             borderRadius: 4,
-                            padding: '1px 5px',
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
+                            border: isSelected ? '1.5px solid var(--brand-primary)' : '1.5px solid var(--border-subtle)',
+                            background: isSelected ? 'var(--brand-primary)' : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            color: '#fff',
                           }}
-                          title={`Peso unitário: ${part.weight_g}g`}
                         >
-                          ⚖️ {part.weight_g}g
-                        </span>
-                      ) : null}
+                          {isSelected && <Check size={12} strokeWidth={3} />}
+                        </div>
 
-                      {part.print_time_hours ? (
-                        <span
+                        {/* Foto individual ou ícone da sub-peça */}
+                        <div
                           style={{
-                            background: 'rgba(245, 158, 11, 0.12)',
-                            color: '#f59e0b',
-                            borderRadius: 4,
-                            padding: '1px 5px',
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
+                            width: 34,
+                            height: 34,
+                            borderRadius: 6,
+                            overflow: 'hidden',
+                            background: 'rgba(0,0,0,0.15)',
+                            border: '1px solid var(--border-subtle)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
                           }}
-                          title={`Tempo estimado: ${part.print_time_hours}h`}
                         >
-                          ⏱️ {part.print_time_hours}h
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
+                          {part.image_url ? (
+                            <img
+                              src={part.image_url}
+                              alt={part.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <FileCode size={16} color={isSelected ? 'var(--brand-primary)' : 'var(--text-muted)'} />
+                          )}
+                        </div>
+
+                        {/* Dados limpos em linha única */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: '0.8rem',
+                              fontWeight: isSelected ? 600 : 500,
+                              color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                              textOverflow: 'ellipsis',
+                              overflow: 'hidden',
+                              whiteSpace: 'nowrap',
+                            }}
+                            title={part.name}
+                          >
+                            {part.name}
+                          </div>
+
+                          <div
+                            className="mono"
+                            style={{
+                              fontSize: '0.7rem',
+                              color: 'var(--text-muted)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              marginTop: 1,
+                            }}
+                          >
+                            <span>{qty}x</span>
+                            <span>•</span>
+                            <span>{part.file_type || '3D'}</span>
+                            {weight > 0 && (
+                              <>
+                                <span>•</span>
+                                <span style={{ color: isSelected ? 'var(--text-secondary)' : 'var(--text-muted)' }}>{weight * qty}g</span>
+                              </>
+                            )}
+                            {hours > 0 && (
+                              <>
+                                <span>•</span>
+                                <span style={{ color: isSelected ? 'var(--text-secondary)' : 'var(--text-muted)' }}>{(hours * qty).toFixed(1)}h</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Rodapé informativo de cálculo do sub-conjunto */}
-          <div
-            style={{
-              marginTop: 14,
-              paddingTop: 10,
-              borderTop: '1px dashed var(--border-subtle)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 8,
-              fontSize: '0.78rem',
-            }}
-          >
-            <div style={{ color: selectedPartIds.size < projectParts.length ? '#f59e0b' : 'var(--text-secondary)' }}>
-              {selectedPartIds.size < projectParts.length ? (
-                <span>⚠️ <strong>Projeto parcial ativo:</strong> Custos, consumo de filamento/resina e tempo de máquina recalculados exclusivamente para as {selectedPartIds.size} sub-peças ativas.</span>
-              ) : (
-                <span>✅ <strong>Montagem completa:</strong> Todas as {projectParts.length} sub-peças do modelo estão incluídas no cálculo de custos e precificação.</span>
-              )}
-            </div>
-
-            <div className="mono" style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.82rem' }}>
-              {activeTab === 'FDM' ? `Consumo: ${fdmWeightG}g • Tempo: ${fdmHours}h` : activeTab === 'RESIN' ? `Volume: ${resinVolumeMl}ml • Tempo: ${resinHours}h` : ''}
-            </div>
+                {/* Aviso sutil se for parcial */}
+                {isPartialParts && (
+                  <div style={{ marginTop: 8, fontSize: '0.72rem', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>⚠️</span>
+                    <span>Modo parcial: apenas as <strong>{activePartsCount}</strong> sub-peças selecionadas entrarão no cálculo de peso, tempo e custos.</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 4. Tabs de Tecnologia */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -1949,26 +1948,24 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className="glass-panel"
+              className={`tech-tab-btn glass-panel ${isActive ? 'active' : ''}`}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '12px 20px',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                border: isActive ? `2px solid ${tab.color}` : '1px solid var(--border-subtle)',
-                background: isActive ? 'var(--bg-surface-elevated)' : 'var(--bg-card)',
-                color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.9rem',
-                transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
-                transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: isActive ? `0 4px 16px -2px color-mix(in srgb, ${tab.color} 25%, transparent)` : 'none',
+                borderColor: isActive ? tab.color : 'var(--border-subtle)',
+                boxShadow: isActive ? `0 6px 20px -2px color-mix(in srgb, ${tab.color} 28%, transparent)` : 'none',
               }}
             >
-              <Icon size={18} color={isActive ? tab.color : 'currentColor'} />
+              <Icon
+                className="tab-icon"
+                size={18}
+                color={isActive ? tab.color : 'currentColor'}
+              />
               <span>{tab.label}</span>
+              {isActive && (
+                <span
+                  className="tab-indicator"
+                  style={{ background: tab.color }}
+                />
+              )}
             </button>
           );
         })}
@@ -2468,7 +2465,8 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                         color: stickerWidthMm === p.w && stickerHeightMm === p.h ? '#06b6d4' : 'var(--text-secondary)',
                         border: stickerWidthMm === p.w && stickerHeightMm === p.h ? '1px solid #06b6d4' : '1px solid var(--border-subtle)',
                         borderRadius: 6,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
                       }}
                     >
                       {p.label}
@@ -2679,7 +2677,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
             }
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div key={activeTab} className="tab-pane-animated" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Highlight Big Price Card */}
                 <div
                   style={{
@@ -2692,6 +2690,7 @@ export const CalculatorPage: React.FC<CalculatorPageProps> = ({
                     borderRadius: 'var(--radius-lg)',
                     padding: '20px',
                     textAlign: 'center',
+                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>

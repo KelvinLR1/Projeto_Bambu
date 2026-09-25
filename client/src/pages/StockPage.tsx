@@ -666,8 +666,7 @@ export const StockPage: React.FC = () => {
                     : 'var(--text-secondary)',
                   border: isActive && tab.danger ? '1px solid rgba(239, 68, 68, 0.35)' : 'none',
                   borderRadius: 8,
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
+                  transition: 'all 0.2s ease',
                   boxShadow: isActive ? (tab.danger ? '0 4px 14px rgba(239, 68, 68, 0.25)' : '0 4px 14px var(--brand-primary-glow)') : 'none',
                 }}
               >
